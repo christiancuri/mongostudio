@@ -9,10 +9,12 @@ import {
 
 interface EditorToolbarProps {
   onRun?: () => void;
+  onStop?: () => void;
   onExplain?: () => void;
+  isExecuting?: boolean;
 }
 
-export function EditorToolbar({ onRun, onExplain }: EditorToolbarProps) {
+export function EditorToolbar({ onRun, onStop, onExplain, isExecuting }: EditorToolbarProps) {
   return (
     <div className="flex h-8 items-center gap-1 border-b border-border bg-background px-2">
       <Tooltip>
@@ -22,6 +24,7 @@ export function EditorToolbar({ onRun, onExplain }: EditorToolbarProps) {
             size="sm"
             className="h-6 gap-1.5 px-2 text-xs text-green-500 hover:text-green-400"
             onClick={onRun}
+            disabled={isExecuting}
           >
             <Play className="h-3 w-3" />
             Run
@@ -37,6 +40,7 @@ export function EditorToolbar({ onRun, onExplain }: EditorToolbarProps) {
             variant="ghost"
             size="sm"
             className="h-6 gap-1.5 px-2 text-xs"
+            disabled={isExecuting}
           >
             <Bug className="h-3 w-3" />
             Debug
@@ -48,12 +52,18 @@ export function EditorToolbar({ onRun, onExplain }: EditorToolbarProps) {
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-6 w-6 p-0 ${isExecuting ? "text-red-500 hover:text-red-400" : ""}`}
+            disabled={!isExecuting}
+            onClick={onStop}
+          >
             <Square className="h-3 w-3" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-xs">
-          Stop
+          Stop Execution
         </TooltipContent>
       </Tooltip>
       <Separator orientation="vertical" className="mx-1 h-4" />
@@ -64,6 +74,7 @@ export function EditorToolbar({ onRun, onExplain }: EditorToolbarProps) {
             size="sm"
             className="h-6 gap-1.5 px-2 text-xs"
             onClick={onExplain}
+            disabled={isExecuting}
           >
             <FileSearch className="h-3 w-3" />
             Explain

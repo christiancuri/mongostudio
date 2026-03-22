@@ -8,3 +8,7 @@ export async function executeQuery(request: QueryRequest): Promise<QueryResult> 
 export async function explainQuery(request: QueryRequest): Promise<ExplainResult> {
   return invoke("explain_query", { request });
 }
+
+export async function cancelExecution(connectionId: string): Promise<boolean> {
+  return invoke("cancel_execution", { connectionId });
+}

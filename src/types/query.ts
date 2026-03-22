@@ -1,7 +1,7 @@
 export interface QueryRequest {
   connectionId: string;
   database: string;
-  collection: string;
+  collection?: string;
   queryText: string;
   page?: number;
   pageSize?: number;
@@ -13,6 +13,7 @@ export interface QueryResult {
   executionTimeMs: number;
   page: number;
   pageSize: number;
+  printOutput?: string[];
 }
 
 export interface ExplainResult {

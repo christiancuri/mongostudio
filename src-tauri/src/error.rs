@@ -17,6 +17,10 @@ pub enum AppError {
     Connection(String),
     #[error("Query error: {0}")]
     Query(String),
+    #[error("JavaScript error: {0}")]
+    JavaScript(String),
+    #[error("Query execution cancelled")]
+    Cancelled,
     #[error("Encryption error: {0}")]
     Encryption(String),
     #[error("{0}")]

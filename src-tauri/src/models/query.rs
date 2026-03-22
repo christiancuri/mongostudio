@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 pub struct QueryRequest {
     pub connection_id: String,
     pub database: String,
-    pub collection: String,
+    #[serde(default)]
+    pub collection: Option<String>,
     pub query_text: String,
     #[serde(default)]
     pub page: Option<u64>,
@@ -25,6 +26,8 @@ pub struct QueryResult {
     pub execution_time_ms: u128,
     pub page: u64,
     pub page_size: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub print_output: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

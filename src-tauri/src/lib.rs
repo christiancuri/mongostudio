@@ -91,6 +91,7 @@ pub fn run() {
             commands::database::get_index_info,
             commands::query::execute_query,
             commands::query::explain_query,
+            commands::query::cancel_execution,
             commands::document::insert_document,
             commands::document::update_document,
             commands::document::delete_document,

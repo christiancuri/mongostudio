@@ -8,7 +8,7 @@ import { useTabStore } from "@/stores/tabStore";
 import { useResultStore } from "@/stores/resultStore";
 import { useConnectionStore } from "@/stores/connectionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { executeQuery } from "@/api/query";
+import { executeQuery, cancelExecution } from "@/api/query";
 import { Breadcrumb } from "./Breadcrumb";
 import { EditorToolbar } from "./EditorToolbar";
 import { setupMonacoLanguage } from "./providers/mongoLanguage";
@@ -27,6 +27,8 @@ export function QueryEditor({ tab }: QueryEditorProps) {
   const updateTab = useTabStore((s) => s.updateTab);
   const setResult = useResultStore((s) => s.setResult);
   const setLoading = useResultStore((s) => s.setLoading);
+  const setExecuting = useResultStore((s) => s.setExecuting);
+  const isExecuting = useResultStore((s) => s.executing.get(tab.id) ?? false);
   const setError = useResultStore((s) => s.setError);
   const clearError = useResultStore((s) => s.clearError);
   const settings = useSettingsStore((s) => s.settings);
@@ -35,7 +37,7 @@ export function QueryEditor({ tab }: QueryEditorProps) {
   const initialContent = editorState?.content ?? tab.content ?? `${dbCol(col)}.find({})\n    .projection({})\n    .sort({_id:-1})\n    .limit(0)`;
 
   const handleRunQuery = useCallback(async () => {
-    if (!tab.connectionId || !tab.database || !tab.collection) return;
+    if (!tab.connectionId || !tab.database) return;
     const editor = editorRef.current;
     if (!editor) return;
 
@@ -50,6 +52,7 @@ export function QueryEditor({ tab }: QueryEditorProps) {
     if (!queryText.trim()) return;
 
     setLoading(tab.id, true);
+    setExecuting(tab.id, true);
     clearError(tab.id);
     try {
       const result = await executeQuery({
@@ -65,8 +68,18 @@ export function QueryEditor({ tab }: QueryEditorProps) {
       setError(tab.id, err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(tab.id, false);
+      setExecuting(tab.id, false);
     }
-  }, [tab, settings.defaultPageSize, setLoading, clearError, setResult, setError]);
+  }, [tab, settings.defaultPageSize, setLoading, setExecuting, clearError, setResult, setError]);
+
+  const handleStopQuery = useCallback(async () => {
+    if (!tab.connectionId) return;
+    try {
+      await cancelExecution(tab.connectionId);
+    } catch {
+      // Cancellation is best-effort
+    }
+  }, [tab.connectionId]);
 
   const handleEditorMount: OnMount = useCallback(
     (editor, monaco) => {
@@ -123,7 +136,12 @@ export function QueryEditor({ tab }: QueryEditorProps) {
         database={tab.database}
         collection={tab.collection}
       />
-      <EditorToolbar onRun={handleRunQuery} />
+      <EditorToolbar
+        onRun={handleRunQuery}
+        onStop={handleStopQuery}
+        onExplain={handleRunQuery}
+        isExecuting={isExecuting}
+      />
       <div className="flex-1 min-h-0">
         <Editor
           defaultLanguage="mongoShell"

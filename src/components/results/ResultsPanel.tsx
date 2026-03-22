@@ -21,9 +21,12 @@ import {
   TreePine,
   Table2,
   Braces,
+  Square,
+  Terminal,
+  ChevronUp,
 } from "lucide-react";
 import type { Tab } from "@/types/tab";
-import { executeQuery } from "@/api/query";
+import { executeQuery, cancelExecution } from "@/api/query";
 import { TreeView } from "./TreeView";
 import { TableView } from "./TableView";
 import { JsonView } from "./JsonView";
@@ -44,6 +47,7 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
   const result = useResultStore((s) => s.results.get(tab.id));
   const viewMode = useResultStore((s) => s.viewMode.get(tab.id) ?? "tree");
   const isLoading = useResultStore((s) => s.loading.get(tab.id) ?? false);
+  const isExecuting = useResultStore((s) => s.executing.get(tab.id) ?? false);
   const error = useResultStore((s) => s.errors.get(tab.id));
   const setViewMode = useResultStore((s) => s.setViewMode);
   const setResult = useResultStore((s) => s.setResult);
@@ -51,9 +55,11 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
   const setError = useResultStore((s) => s.setError);
   const clearError = useResultStore((s) => s.clearError);
 
+  const [consoleOpen, setConsoleOpen] = useState(false);
+
   const reRunQuery = useCallback(
     async (page: number, pageSize: number) => {
-      if (!tab.connectionId || !tab.database || !tab.collection) return;
+      if (!tab.connectionId || !tab.database) return;
       const editorContent = useEditorStore.getState().editors.get(tab.id)?.content;
       const queryText = editorContent ?? tab.content ?? "";
       if (!queryText.trim()) return;
@@ -94,6 +100,15 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
     [reRunQuery],
   );
 
+  const handleStopExecution = useCallback(async () => {
+    if (!tab.connectionId) return;
+    try {
+      await cancelExecution(tab.connectionId);
+    } catch {
+      // Cancellation is best-effort
+    }
+  }, [tab.connectionId]);
+
   const totalPages =
     result && result.totalCount
       ? Math.ceil(result.totalCount / result.pageSize)
@@ -109,6 +124,8 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
 
   // Expand/collapse all signal: positive = expand, negative = collapse
   const [expandSignal, setExpandSignal] = useState(0);
+
+  const printOutput = result?.printOutput;
 
   return (
     <div className="flex h-full flex-col">
@@ -141,6 +158,25 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
                   ? "s"
                   : ""}
               </span>
+            </>
+          )}
+          {printOutput && printOutput.length > 0 && (
+            <>
+              <span className="text-muted-foreground/50">|</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 gap-1 px-1.5 text-[10px] text-muted-foreground"
+                onClick={() => setConsoleOpen((v) => !v)}
+              >
+                <Terminal className="h-3 w-3" />
+                Console ({printOutput.length})
+                {consoleOpen ? (
+                  <ChevronDown className="h-2.5 w-2.5" />
+                ) : (
+                  <ChevronUp className="h-2.5 w-2.5" />
+                )}
+              </Button>
             </>
           )}
         </div>
@@ -186,7 +222,7 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
                       onClick={() => handlePageSizeChange(size)}
                       className="text-xs justify-between"
                     >
-                      {result.pageSize === size && <span className="text-primary mr-2">✓</span>}
+                      {result.pageSize === size && <span className="text-primary mr-2">&#10003;</span>}
                       <span className={result.pageSize === size ? "font-medium" : ""}>{size}</span>
                     </DropdownMenuItem>
                   ))}
@@ -280,9 +316,39 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
         </div>
       </div>
 
+      {/* Console output (collapsible) */}
+      {consoleOpen && printOutput && printOutput.length > 0 && (
+        <div className="max-h-32 shrink-0 overflow-auto border-b border-border bg-[#1a1a2e] p-2">
+          <div className="font-mono text-xs text-green-400">
+            {printOutput.map((line, i) => (
+              <div key={`console-${i}-${line.slice(0, 20)}`} className="whitespace-pre-wrap">
+                {line}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Content */}
-      <div className="min-h-0 flex-1 overflow-hidden">
-        {isLoading && (
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        {/* Running overlay */}
+        {isExecuting && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-3 text-sm text-muted-foreground">Running query...</p>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="mt-3 gap-1.5"
+              onClick={handleStopExecution}
+            >
+              <Square className="h-3 w-3" />
+              Stop
+            </Button>
+          </div>
+        )}
+
+        {isLoading && !isExecuting && (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
