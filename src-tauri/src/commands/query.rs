@@ -88,6 +88,7 @@ pub async fn execute_query(
                 } else {
                     Some(exec_result.print_output)
                 },
+                is_raw_output: exec_result.is_raw_output,
             })
         }
         Err(e) => {

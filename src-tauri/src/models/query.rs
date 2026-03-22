@@ -28,6 +28,10 @@ pub struct QueryResult {
     pub page_size: u64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub print_output: Option<Vec<String>>,
+    /// When true, the result is raw JS output (not MongoDB documents).
+    /// Frontend should display in JSON view.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub is_raw_output: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

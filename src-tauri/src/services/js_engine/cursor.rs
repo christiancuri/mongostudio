@@ -82,6 +82,33 @@ impl MongoCursor {
         Ok(this.0)
     }
 
+    /// select('name age') or select({name: 1}) — Mongoose/NoSQLBooster-style projection
+    pub fn select<'js>(
+        this: This<Class<'js, Self>>,
+        ctx: Ctx<'js>,
+        fields: Value<'js>,
+    ) -> rquickjs::Result<Class<'js, Self>> {
+        let json_str = if let Some(s) = fields.as_string() {
+            // String form: "name age -email" → {name: 1, age: 1, email: 0}
+            let s = s.to_string()?;
+            let mut proj = serde_json::Map::new();
+            for field in s.split_whitespace() {
+                if let Some(name) = field.strip_prefix('-') {
+                    proj.insert(name.to_string(), serde_json::json!(0));
+                } else {
+                    proj.insert(field.to_string(), serde_json::json!(1));
+                }
+            }
+            serde_json::to_string(&proj).unwrap_or_else(|_| "{}".to_string())
+        } else {
+            // Object form: {name: 1}
+            let json = js_to_json(&ctx, fields)?;
+            serde_json::to_string(&json).unwrap_or_else(|_| "{}".to_string())
+        };
+        this.0.borrow_mut().projection_json = json_str;
+        Ok(this.0)
+    }
+
     pub fn limit<'js>(
         this: This<Class<'js, Self>>,
         n: i64,
@@ -147,7 +174,15 @@ impl MongoCursor {
             });
 
             match result {
-                Ok(docs) => docs_to_js_array(&ctx, &docs),
+                Ok(docs) => {
+                    // Store as last query result for fallback
+                    let json_docs: Vec<serde_json::Value> = docs
+                        .iter()
+                        .filter_map(|d| bson_doc_to_json(d).ok())
+                        .collect();
+                    super::store_last_query_result(&serde_json::Value::Array(json_docs));
+                    docs_to_js_array(&ctx, &docs)
+                }
                 Err(e) => Err(throw_error(&ctx, &format!("MongoDB error: {e}"))),
             }
         })

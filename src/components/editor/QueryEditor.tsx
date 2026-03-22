@@ -64,6 +64,11 @@ export function QueryEditor({ tab }: QueryEditorProps) {
         pageSize: settings.defaultPageSize,
       });
       setResult(tab.id, result);
+      if (result.isRawOutput) {
+        useResultStore.getState().setViewMode(tab.id, "json");
+      } else {
+        useResultStore.getState().setViewMode(tab.id, "tree");
+      }
     } catch (err) {
       setError(tab.id, err instanceof Error ? err.message : String(err));
     } finally {

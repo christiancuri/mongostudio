@@ -173,9 +173,17 @@ pub fn register_globals<'js>(ctx: &Ctx<'js>) -> rquickjs::Result<()> {
         )?,
     )?;
 
-    // Inject print() and console via JS (wrapping __print)
+    // Inject print(), console, and RegExp.toJSON via JS
     ctx.eval::<(), _>(
         r"
+        // Make RegExp serialize to MongoDB's $regularExpression format.
+        // Without this, JSON.stringify turns /pattern/flags into {}.
+        RegExp.prototype.toJSON = function() {
+            // MongoDB only supports: i, m, s, x, u. Strip JS-only flags (g, y, d, v).
+            const mongoFlags = this.flags.replace(/[^imsxu]/g, '');
+            return { $regularExpression: { pattern: this.source, options: mongoFlags } };
+        };
+
         function print(...args) {
             __print(args.map(a => typeof a === 'object' && a !== null ? JSON.stringify(a, null, 2) : String(a)).join(' '));
         }

@@ -90,6 +90,8 @@ impl MongoCollection {
                     Ok(v) => v,
                     Err(e) => return Err(throw_error(&ctx, &format!("Serialization error: {e}"))),
                 };
+                // Store as last query result for fallback
+                super::store_last_query_result(&serde_json::Value::Array(vec![json.clone()]));
                 json_to_js(&ctx, &json)
             }
             None => Ok(Value::new_null(ctx.clone())),
@@ -141,12 +143,16 @@ impl MongoCollection {
         })?;
 
         let arr = rquickjs::Array::new(ctx.clone())?;
+        let mut json_docs = Vec::new();
         for (i, doc) in docs.iter().enumerate() {
             let json = bson_doc_to_json(doc)
                 .map_err(|e| throw_error(&ctx, &format!("Serialization error: {e}")))?;
             let js_val = json_to_js(&ctx, &json)?;
             arr.set(i, js_val)?;
+            json_docs.push(json);
         }
+        // Store as last query result for fallback
+        super::store_last_query_result(&serde_json::Value::Array(json_docs));
         Ok(arr.into_value())
     }
 

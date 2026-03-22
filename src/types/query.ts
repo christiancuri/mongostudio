@@ -14,6 +14,7 @@ export interface QueryResult {
   page: number;
   pageSize: number;
   printOutput?: string[];
+  isRawOutput?: boolean;
 }
 
 export interface ExplainResult {
