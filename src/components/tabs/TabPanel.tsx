@@ -13,7 +13,10 @@ export function TabPanel() {
     return (
       <div className="flex flex-1 items-center justify-center text-muted-foreground">
         <div className="text-center">
-          <p className="text-lg font-medium">MongoStudio</p>
+          <div className="flex items-center justify-center gap-2">
+            <img src="/favicon.png" alt="MongoStudio" className="h-8 w-8" />
+            <p className="text-lg font-medium">MongoStudio</p>
+          </div>
           <p className="mt-1 text-sm">Connect to a server or open a new tab to get started</p>
           <div className="mt-4 space-y-1 text-xs text-muted-foreground/70">
             <p>Ctrl+N — New Connection</p>

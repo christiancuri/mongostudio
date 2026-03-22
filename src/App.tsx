@@ -32,7 +32,10 @@ export default function App() {
       {restoring ? (
         <div className="flex h-screen items-center justify-center bg-background text-foreground">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-primary">MongoStudio</h1>
+            <div className="flex items-center justify-center gap-3">
+              <img src="/favicon.png" alt="MongoStudio" className="h-10 w-10" />
+              <h1 className="text-2xl font-bold text-primary">MongoStudio</h1>
+            </div>
             <p className="mt-2 text-sm text-muted-foreground">Restoring session...</p>
           </div>
         </div>
