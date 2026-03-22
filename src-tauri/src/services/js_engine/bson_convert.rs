@@ -15,9 +15,7 @@ pub fn js_to_json<'js>(ctx: &Ctx<'js>, value: Value<'js>) -> rquickjs::Result<se
         return Ok(serde_json::json!(n));
     }
 
-    let json_str = ctx
-        .json_stringify(value)?
-        .ok_or(rquickjs::Error::Unknown)?;
+    let json_str = ctx.json_stringify(value)?.ok_or(rquickjs::Error::Unknown)?;
     let s = json_str.to_string()?;
     serde_json::from_str(&s).map_err(|_| rquickjs::Error::Unknown)
 }
@@ -27,16 +25,13 @@ pub fn json_to_js<'js>(ctx: &Ctx<'js>, value: &serde_json::Value) -> rquickjs::R
     if value.is_null() {
         return Ok(Value::new_null(ctx.clone()));
     }
-    let json_str =
-        serde_json::to_string(value).map_err(|_| rquickjs::Error::Unknown)?;
+    let json_str = serde_json::to_string(value).map_err(|_| rquickjs::Error::Unknown)?;
     ctx.json_parse(json_str)
 }
 
 /// Convert serde_json::Value to a bson::Document, handling extended JSON markers.
 /// Extended JSON markers like {"$oid": "..."} are converted to proper BSON types.
-pub fn json_to_bson_doc(
-    value: &serde_json::Value,
-) -> Result<mongodb::bson::Document, String> {
+pub fn json_to_bson_doc(value: &serde_json::Value) -> Result<mongodb::bson::Document, String> {
     let bson_val = json_to_bson(value);
     match bson_val {
         mongodb::bson::Bson::Document(doc) => Ok(doc),
@@ -61,15 +56,17 @@ pub fn json_to_bson(value: &serde_json::Value) -> mongodb::bson::Bson {
                     if let Some(s) = date_val.as_str() {
                         if let Ok(dt) = chrono::DateTime::parse_from_rfc3339(s) {
                             return mongodb::bson::Bson::DateTime(
-                                mongodb::bson::DateTime::from_chrono(dt.with_timezone(&chrono::Utc)),
+                                mongodb::bson::DateTime::from_chrono(
+                                    dt.with_timezone(&chrono::Utc),
+                                ),
                             );
                         }
                         // Try ISO 8601 without timezone
-                        if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S%.fZ") {
+                        if let Ok(dt) =
+                            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S%.fZ")
+                        {
                             return mongodb::bson::Bson::DateTime(
-                                mongodb::bson::DateTime::from_chrono(
-                                    dt.and_utc(),
-                                ),
+                                mongodb::bson::DateTime::from_chrono(dt.and_utc()),
                             );
                         }
                     }
@@ -116,26 +113,21 @@ pub fn json_to_bson(value: &serde_json::Value) -> mongodb::bson::Bson {
                     if let Some(s) = nd_val.as_str() {
                         // Store as extended JSON document - the driver handles the conversion
                         let mut doc = mongodb::bson::Document::new();
-                        doc.insert("$numberDecimal".to_string(), mongodb::bson::Bson::String(s.to_string()));
+                        doc.insert(
+                            "$numberDecimal".to_string(),
+                            mongodb::bson::Bson::String(s.to_string()),
+                        );
                         return mongodb::bson::Bson::Document(doc);
                     }
                 }
                 if let Some(regex_val) = map.get("$regularExpression") {
                     if let Some(obj) = regex_val.as_object() {
-                        let pattern = obj
-                            .get("pattern")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("");
-                        let options = obj
-                            .get("options")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("");
-                        return mongodb::bson::Bson::RegularExpression(
-                            mongodb::bson::Regex {
-                                pattern: pattern.to_string(),
-                                options: options.to_string(),
-                            },
-                        );
+                        let pattern = obj.get("pattern").and_then(|v| v.as_str()).unwrap_or("");
+                        let options = obj.get("options").and_then(|v| v.as_str()).unwrap_or("");
+                        return mongodb::bson::Bson::RegularExpression(mongodb::bson::Regex {
+                            pattern: pattern.to_string(),
+                            options: options.to_string(),
+                        });
                     }
                 }
             }
@@ -172,8 +164,6 @@ pub fn json_to_bson(value: &serde_json::Value) -> mongodb::bson::Bson {
 
 /// Convert a bson::Document to serde_json::Value using standard serialization.
 /// BSON types are serialized as extended JSON (e.g., ObjectId -> {"$oid": "..."}).
-pub fn bson_doc_to_json(
-    doc: &mongodb::bson::Document,
-) -> Result<serde_json::Value, String> {
+pub fn bson_doc_to_json(doc: &mongodb::bson::Document) -> Result<serde_json::Value, String> {
     serde_json::to_value(doc).map_err(|e| e.to_string())
 }

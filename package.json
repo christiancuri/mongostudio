@@ -8,11 +8,10 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "lint": "biome check src/",
-    "lint:fix": "biome check --write src/",
-    "format": "biome format --write src/",
-    "lint:rust": "cd src-tauri && cargo clippy -- -D warnings",
-    "format:rust": "cd src-tauri && cargo fmt"
+    "lint": "biome check src/ && cd src-tauri && cargo clippy -- -D warnings",
+    "lint:fix": "biome check --write --unsafe src/ && cd src-tauri && cargo fmt",
+    "format": "biome format --write src/ && cd src-tauri && cargo fmt",
+    "fix": "biome check --write --unsafe src/ && cd src-tauri && cargo fmt"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.0",

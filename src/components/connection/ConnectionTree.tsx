@@ -1,22 +1,4 @@
-import { useState, useCallback } from "react";
-import { dbCol } from "@/utils/mongo";
-import { buildConnectionString } from "@/utils/uriParser";
-import {
-  ChevronRight,
-  ChevronDown,
-  Table2,
-  RefreshCw,
-  Loader2,
-  Server,
-  Unplug,
-  Database,
-  KeyRound,
-  Key,
-  Terminal,
-  Link,
-  Copy,
-  Pencil,
-} from "lucide-react";
+import * as databaseApi from "@/api/database";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -24,13 +6,31 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { useConnectionStore } from "@/stores/connectionStore";
 import { useConnection } from "@/hooks/useConnection";
-import { useTabStore } from "@/stores/tabStore";
-import * as databaseApi from "@/api/database";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useConnectionStore } from "@/stores/connectionStore";
+import { useTabStore } from "@/stores/tabStore";
 import type { ConnectionConfig } from "@/types/connection";
+import { dbCol } from "@/utils/mongo";
+import { buildConnectionString } from "@/utils/uriParser";
+import {
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Database,
+  Key,
+  KeyRound,
+  Link,
+  Loader2,
+  Pencil,
+  RefreshCw,
+  Server,
+  Table2,
+  Terminal,
+  Unplug,
+} from "lucide-react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { ConnectionEditDialog } from "./ConnectionEditDialog";
 
 interface IndexEntry {
@@ -233,7 +233,13 @@ export function ConnectionTree() {
   );
 
   const handleOpenIndexInfo = useCallback(
-    async (connectionId: string, database: string, collection: string, indexName: string, colorFlag?: string) => {
+    async (
+      connectionId: string,
+      database: string,
+      collection: string,
+      indexName: string,
+      colorFlag?: string,
+    ) => {
       const tabId = crypto.randomUUID();
       const col = dbCol(collection);
       addTab({
@@ -288,7 +294,10 @@ export function ConnectionTree() {
   );
 
   // Connection editor dialog state
-  const [editDialog, setEditDialog] = useState<{ open: boolean; config: ConnectionConfig | null }>({ open: false, config: null });
+  const [editDialog, setEditDialog] = useState<{ open: boolean; config: ConnectionConfig | null }>({
+    open: false,
+    config: null,
+  });
 
   const handleOpenShellTab = useCallback(
     (connectionId: string, colorFlag?: string) => {
@@ -364,7 +373,8 @@ export function ConnectionTree() {
                   >
                     {getConnectionDisplayName(conn.config)}
                     <span className="text-muted-foreground font-normal">
-                      {" "}({conn.databases.length} db{conn.databases.length !== 1 ? "s" : ""})
+                      {" "}
+                      ({conn.databases.length} db{conn.databases.length !== 1 ? "s" : ""})
                     </span>
                   </span>
                 </div>
@@ -441,7 +451,11 @@ export function ConnectionTree() {
                         <span className="whitespace-nowrap">
                           {db.name}
                           {(isExpanded && collections.length > 0) || db.sizeOnDisk != null ? (
-                            <span className="text-muted-foreground"> ({isExpanded ? `${collections.length} | ` : ""}{db.sizeOnDisk != null ? formatSize(db.sizeOnDisk) : ""})</span>
+                            <span className="text-muted-foreground">
+                              {" "}
+                              ({isExpanded ? `${collections.length} | ` : ""}
+                              {db.sizeOnDisk != null ? formatSize(db.sizeOnDisk) : ""})
+                            </span>
                           ) : null}
                         </span>
                       </button>
@@ -508,7 +522,10 @@ export function ConnectionTree() {
                                 <span className="whitespace-nowrap">
                                   {col.name}
                                   {col.docCount != null && (
-                                    <span className="text-muted-foreground"> ({formatCount(col.docCount)})</span>
+                                    <span className="text-muted-foreground">
+                                      {" "}
+                                      ({formatCount(col.docCount)})
+                                    </span>
                                   )}
                                 </span>
                               </button>
@@ -568,7 +585,13 @@ export function ConnectionTree() {
                                     key={idx.name}
                                     className="flex w-full items-center gap-1.5 pl-[5rem] pr-2 py-0.5 text-xs text-sidebar-foreground/60 hover:bg-sidebar-border/50 cursor-pointer"
                                     onDoubleClick={() =>
-                                      handleOpenIndexInfo(id, db.name, col.name, idx.name, conn.config.colorFlag)
+                                      handleOpenIndexInfo(
+                                        id,
+                                        db.name,
+                                        col.name,
+                                        idx.name,
+                                        conn.config.colorFlag,
+                                      )
                                     }
                                   >
                                     <Key className="h-3 w-3 shrink-0 text-amber-400/70" />

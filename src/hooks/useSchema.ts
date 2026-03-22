@@ -1,14 +1,10 @@
-import { useState, useCallback } from "react";
 import { analyzeSchema } from "@/api/schema";
 import type { SchemaAnalysisResult } from "@/types/schema";
+import { useCallback, useState } from "react";
 
 const schemaCache = new Map<string, SchemaAnalysisResult>();
 
-function getCacheKey(
-  connectionId: string,
-  database: string,
-  collection: string,
-): string {
+function getCacheKey(connectionId: string, database: string, collection: string): string {
   return `${connectionId}:${database}:${collection}`;
 }
 
@@ -31,12 +27,7 @@ export function useSchema() {
 
       setLoading(true);
       try {
-        const result = await analyzeSchema(
-          connectionId,
-          database,
-          collection,
-          sampleSize,
-        );
+        const result = await analyzeSchema(connectionId, database, collection, sampleSize);
         schemaCache.set(key, result);
         return result;
       } catch {
@@ -49,11 +40,7 @@ export function useSchema() {
   );
 
   const getFieldNames = useCallback(
-    (
-      connectionId: string,
-      database: string,
-      collection: string,
-    ): string[] => {
+    (connectionId: string, database: string, collection: string): string[] => {
       const key = getCacheKey(connectionId, database, collection);
       const cached = schemaCache.get(key);
       if (!cached) return [];
@@ -65,10 +52,7 @@ export function useSchema() {
   return { loading, getSchema, getFieldNames };
 }
 
-function extractFieldNames(
-  fields: SchemaAnalysisResult["fields"],
-  prefix = "",
-): string[] {
+function extractFieldNames(fields: SchemaAnalysisResult["fields"], prefix = ""): string[] {
   const names: string[] = [];
   for (const field of fields) {
     const fullPath = prefix ? `${prefix}.${field.name}` : field.name;

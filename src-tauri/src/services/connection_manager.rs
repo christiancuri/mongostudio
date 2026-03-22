@@ -26,8 +26,8 @@ impl ConnectionManager {
         let client_options = ClientOptions::parse(&conn_str)
             .await
             .map_err(|e| AppError::Connection(e.to_string()))?;
-        let client =
-            Client::with_options(client_options).map_err(|e| AppError::Connection(e.to_string()))?;
+        let client = Client::with_options(client_options)
+            .map_err(|e| AppError::Connection(e.to_string()))?;
 
         // Test the connection
         client

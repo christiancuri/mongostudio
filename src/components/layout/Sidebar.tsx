@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { DatabaseBrowser } from "@/components/sidebar/DatabaseBrowser";
 import { MyQueries } from "@/components/sidebar/MyQueries";
 import { Samples } from "@/components/sidebar/Samples";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 export function Sidebar() {
   const [bottomTab, setBottomTab] = useState<"queries" | "samples">("queries");

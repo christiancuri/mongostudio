@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import type { QueryResult } from "@/types/query";
+import { create } from "zustand";
 
 type ViewMode = "tree" | "table" | "json";
 

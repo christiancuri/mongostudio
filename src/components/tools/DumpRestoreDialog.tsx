@@ -1,23 +1,17 @@
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  HardDriveDownload,
-  HardDriveUpload,
-  Loader2,
-  FolderOpen,
-  AlertCircle,
-} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertCircle, FolderOpen, HardDriveDownload, HardDriveUpload, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface DumpRestoreDialogProps {
@@ -56,7 +50,7 @@ export function DumpRestoreDialog({
     setOutput("Starting mongodump...\n");
     try {
       // TODO: Wire to tauri-plugin-shell to run mongodump
-      setOutput((prev) => prev + "mongodump command would run here\n");
+      setOutput((prev) => `${prev}mongodump command would run here\n`);
       toast.info("mongodump integration coming soon");
     } catch (err) {
       toast.error("Dump failed", {
@@ -76,7 +70,7 @@ export function DumpRestoreDialog({
     setOutput("Starting mongorestore...\n");
     try {
       // TODO: Wire to tauri-plugin-shell to run mongorestore
-      setOutput((prev) => prev + "mongorestore command would run here\n");
+      setOutput((prev) => `${prev}mongorestore command would run here\n`);
       toast.info("mongorestore integration coming soon");
     } catch (err) {
       toast.error("Restore failed", {
@@ -173,11 +167,7 @@ export function DumpRestoreDialog({
         )}
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-          >
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button
@@ -185,9 +175,7 @@ export function DumpRestoreDialog({
             onClick={activeTab === "dump" ? handleDump : handleRestore}
             disabled={running}
           >
-            {running && (
-              <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-            )}
+            {running && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
             {activeTab === "dump" ? "Start Dump" : "Start Restore"}
           </Button>
         </DialogFooter>

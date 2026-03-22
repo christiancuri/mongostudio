@@ -1,8 +1,8 @@
-import { load } from "@tauri-apps/plugin-store";
-import { useTabStore } from "@/stores/tabStore";
-import { useEditorStore } from "@/stores/editorStore";
 import { useConnectionStore } from "@/stores/connectionStore";
+import { useEditorStore } from "@/stores/editorStore";
+import { useTabStore } from "@/stores/tabStore";
 import type { Tab } from "@/types/tab";
+import { load } from "@tauri-apps/plugin-store";
 
 const SESSION_FILE = "session.json";
 const SESSION_KEY = "session";

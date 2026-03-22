@@ -145,9 +145,6 @@ impl ConnectionConfig {
             String::new()
         };
 
-        format!(
-            "{}://{auth}{host_str}/{db}{options_str}",
-            self.uri.scheme
-        )
+        format!("{}://{auth}{host_str}/{db}{options_str}", self.uri.scheme)
     }
 }

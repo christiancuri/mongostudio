@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import type { Tab } from "@/types/tab";
+import { create } from "zustand";
 
 interface TabState {
   tabs: Tab[];

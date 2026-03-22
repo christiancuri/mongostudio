@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { load } from "@tauri-apps/plugin-store";
 import type { ConnectionConfig } from "@/types/connection";
-import type { DatabaseInfo, CollectionInfo } from "@/types/database";
+import type { CollectionInfo, DatabaseInfo } from "@/types/database";
+import { load } from "@tauri-apps/plugin-store";
+import { create } from "zustand";
 
 const STORE_FILE = "connections.json";
 const STORE_KEY = "savedConnections";
@@ -29,12 +29,15 @@ async function loadConnections(): Promise<ConnectionConfig[]> {
 
 interface ConnectionState {
   savedConnections: ConnectionConfig[];
-  activeConnections: Map<string, {
-    config: ConnectionConfig;
-    databases: DatabaseInfo[];
-    collections: Map<string, CollectionInfo[]>;
-    expanded: Set<string>;
-  }>;
+  activeConnections: Map<
+    string,
+    {
+      config: ConnectionConfig;
+      databases: DatabaseInfo[];
+      collections: Map<string, CollectionInfo[]>;
+      expanded: Set<string>;
+    }
+  >;
   loadSavedConnections: () => Promise<void>;
   setSavedConnections: (connections: ConnectionConfig[]) => void;
   addSavedConnection: (config: ConnectionConfig) => void;
@@ -44,7 +47,12 @@ interface ConnectionState {
   removeActiveConnection: (id: string) => void;
   setDatabases: (connectionId: string, databases: DatabaseInfo[]) => void;
   setCollections: (connectionId: string, database: string, collections: CollectionInfo[]) => void;
-  updateCollectionInfo: (connectionId: string, database: string, collectionName: string, updates: Partial<CollectionInfo>) => void;
+  updateCollectionInfo: (
+    connectionId: string,
+    database: string,
+    collectionName: string,
+    updates: Partial<CollectionInfo>,
+  ) => void;
   toggleExpanded: (connectionId: string, path: string) => void;
 }
 
@@ -124,9 +132,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
         const cols = new Map(conn.collections);
         const list = cols.get(database);
         if (list) {
-          const updated = list.map((c) =>
-            c.name === collectionName ? { ...c, ...updates } : c,
-          );
+          const updated = list.map((c) => (c.name === collectionName ? { ...c, ...updates } : c));
           cols.set(database, updated);
           next.set(connectionId, { ...conn, collections: cols });
         }

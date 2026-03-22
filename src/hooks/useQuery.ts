@@ -1,5 +1,5 @@
-import { useResultStore } from "@/stores/resultStore";
 import * as queryApi from "@/api/query";
+import { useResultStore } from "@/stores/resultStore";
 import type { QueryRequest } from "@/types/query";
 
 export function useQuery() {

@@ -1,19 +1,19 @@
-import { useRef, useCallback } from "react";
+import { cancelExecution, executeQuery } from "@/api/query";
+import { useConnectionStore } from "@/stores/connectionStore";
+import { useEditorStore } from "@/stores/editorStore";
+import { useResultStore } from "@/stores/resultStore";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { useTabStore } from "@/stores/tabStore";
+import type { Tab } from "@/types/tab";
 import { dbCol } from "@/utils/mongo";
 import Editor, { type OnMount } from "@monaco-editor/react";
 import type { editor as MonacoEditor } from "monaco-editor";
-import type { Tab } from "@/types/tab";
-import { useEditorStore } from "@/stores/editorStore";
-import { useTabStore } from "@/stores/tabStore";
-import { useResultStore } from "@/stores/resultStore";
-import { useConnectionStore } from "@/stores/connectionStore";
-import { useSettingsStore } from "@/stores/settingsStore";
-import { executeQuery, cancelExecution } from "@/api/query";
+import { useCallback, useRef } from "react";
 import { Breadcrumb } from "./Breadcrumb";
 import { EditorToolbar } from "./EditorToolbar";
-import { setupMonacoLanguage } from "./providers/mongoLanguage";
 import { registerCompletionProvider } from "./providers/completionProvider";
 import { registerHoverProvider } from "./providers/hoverProvider";
+import { setupMonacoLanguage } from "./providers/mongoLanguage";
 
 interface QueryEditorProps {
   tab: Tab;
@@ -34,7 +34,10 @@ export function QueryEditor({ tab }: QueryEditorProps) {
   const settings = useSettingsStore((s) => s.settings);
 
   const col = tab.collection ?? "collection";
-  const initialContent = editorState?.content ?? tab.content ?? `${dbCol(col)}.find({})\n    .projection({})\n    .sort({_id:-1})\n    .limit(0)`;
+  const initialContent =
+    editorState?.content ??
+    tab.content ??
+    `${dbCol(col)}.find({})\n    .projection({})\n    .sort({_id:-1})\n    .limit(0)`;
 
   const handleRunQuery = useCallback(async () => {
     if (!tab.connectionId || !tab.database) return;

@@ -44,7 +44,14 @@ export interface SshTunnelConfig {
 }
 
 export const CONNECTION_COLORS = [
-  "gray", "red", "orange", "yellow", "green", "blue", "purple", "pink"
+  "gray",
+  "red",
+  "orange",
+  "yellow",
+  "green",
+  "blue",
+  "purple",
+  "pink",
 ] as const;
 
 export type ConnectionColor = (typeof CONNECTION_COLORS)[number];

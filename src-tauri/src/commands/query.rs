@@ -40,8 +40,7 @@ pub async fn execute_query(
     // QuickJS is synchronous and uses handle.block_on() for MongoDB async operations.
     let (tx, rx) = tokio::sync::oneshot::channel();
     std::thread::spawn(move || {
-        let result =
-            crate::services::js_engine::execute(&script, db, handle, cancel_flag);
+        let result = crate::services::js_engine::execute(&script, db, handle, cancel_flag);
         let _ = tx.send(result);
     });
 

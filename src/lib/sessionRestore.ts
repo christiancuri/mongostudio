@@ -1,10 +1,10 @@
-import { loadSession, setRestoring } from "./sessionPersistence";
-import { useTabStore } from "@/stores/tabStore";
-import { useEditorStore } from "@/stores/editorStore";
-import { useConnectionStore } from "@/stores/connectionStore";
 import * as connectionApi from "@/api/connection";
 import * as databaseApi from "@/api/database";
+import { useConnectionStore } from "@/stores/connectionStore";
+import { useEditorStore } from "@/stores/editorStore";
+import { useTabStore } from "@/stores/tabStore";
 import { toast } from "sonner";
+import { loadSession, setRestoring } from "./sessionPersistence";
 
 export async function restoreSession(): Promise<void> {
   const session = await loadSession();
@@ -61,7 +61,11 @@ export async function restoreSession(): Promise<void> {
               connStore.setCollections(connId, path, collections);
 
               // Load stats async (non-blocking)
-              loadCollectionStatsAsync(connId, path, collections.map((c) => c.name));
+              loadCollectionStatsAsync(
+                connId,
+                path,
+                collections.map((c) => c.name),
+              );
             } catch {
               // Skip if we can't load collections for this database
             }

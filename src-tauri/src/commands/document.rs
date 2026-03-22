@@ -17,10 +17,8 @@ pub async fn insert_document(
     let db = client.database(&database);
     let col = db.collection::<Document>(&collection);
 
-    let bson_val =
-        mongodb::bson::to_bson(&document).map_err(|e| AppError::Query(e.to_string()))?;
-    let doc =
-        mongodb::bson::to_document(&bson_val).map_err(|e| AppError::Query(e.to_string()))?;
+    let bson_val = mongodb::bson::to_bson(&document).map_err(|e| AppError::Query(e.to_string()))?;
+    let doc = mongodb::bson::to_document(&bson_val).map_err(|e| AppError::Query(e.to_string()))?;
 
     let result = col
         .insert_one(doc)

@@ -1,11 +1,11 @@
 use std::sync::atomic::Ordering;
 
 use rquickjs::class::Trace;
-use rquickjs::JsLifetime;
 use rquickjs::prelude::Opt;
+use rquickjs::JsLifetime;
 use rquickjs::{Class, Ctx, Value};
 
-use super::bson_convert::{bson_doc_to_json, json_to_bson_doc, json_to_js, js_to_json};
+use super::bson_convert::{bson_doc_to_json, js_to_json, json_to_bson_doc, json_to_js};
 use super::cursor::MongoCursor;
 use super::globals::throw_error;
 use super::ENGINE_STATE;
@@ -128,7 +128,10 @@ impl MongoCollection {
                     let col = state
                         .db
                         .collection::<mongodb::bson::Document>(&collection_name);
-                    let mut cursor = col.aggregate(bson_pipeline).await.map_err(|e| e.to_string())?;
+                    let mut cursor = col
+                        .aggregate(bson_pipeline)
+                        .await
+                        .map_err(|e| e.to_string())?;
                     let mut docs = Vec::new();
                     while cursor.advance().await.map_err(|e| e.to_string())? {
                         let doc = cursor.deserialize_current().map_err(|e| e.to_string())?;
@@ -160,11 +163,7 @@ impl MongoCollection {
 
     /// insertOne(doc) -> { insertedId }
     #[qjs(rename = "insertOne")]
-    pub fn insert_one<'js>(
-        &self,
-        ctx: Ctx<'js>,
-        doc: Value<'js>,
-    ) -> rquickjs::Result<Value<'js>> {
+    pub fn insert_one<'js>(&self, ctx: Ctx<'js>, doc: Value<'js>) -> rquickjs::Result<Value<'js>> {
         let json = js_to_json(&ctx, doc)?;
         let bson_doc = json_to_bson_doc(&json)
             .map_err(|e| throw_error(&ctx, &format!("Invalid document: {e}")))?;
@@ -186,8 +185,8 @@ impl MongoCollection {
                 .map_err(|e| throw_error(&ctx, &format!("MongoDB error: {e}")))
         })?;
 
-        let id_json = serde_json::to_value(&result.inserted_id)
-            .map_err(|_| rquickjs::Error::Unknown)?;
+        let id_json =
+            serde_json::to_value(&result.inserted_id).map_err(|_| rquickjs::Error::Unknown)?;
         let result_json = serde_json::json!({"insertedId": id_json});
         json_to_js(&ctx, &result_json)
     }
@@ -403,9 +402,7 @@ impl MongoCollection {
                     let col = state
                         .db
                         .collection::<mongodb::bson::Document>(&collection_name);
-                    col.delete_many(filter_doc)
-                        .await
-                        .map_err(|e| e.to_string())
+                    col.delete_many(filter_doc).await.map_err(|e| e.to_string())
                 })
                 .map_err(|e| throw_error(&ctx, &format!("MongoDB error: {e}")))
         })?;
@@ -418,7 +415,11 @@ impl MongoCollection {
 
     /// countDocuments(filter?) -> number
     #[qjs(rename = "countDocuments")]
-    pub fn count_documents<'js>(&self, ctx: Ctx<'js>, filter: Opt<Value<'js>>) -> rquickjs::Result<i64> {
+    pub fn count_documents<'js>(
+        &self,
+        ctx: Ctx<'js>,
+        filter: Opt<Value<'js>>,
+    ) -> rquickjs::Result<i64> {
         let filter_doc = parse_filter(&ctx, &filter)?;
 
         let collection_name = self.collection_name.clone();
@@ -572,8 +573,7 @@ impl MongoCollection {
                     let mut indexes = Vec::new();
                     while cursor.advance().await.map_err(|e| e.to_string())? {
                         let idx = cursor.deserialize_current().map_err(|e| e.to_string())?;
-                        let json = serde_json::to_value(&idx)
-                            .map_err(|e| e.to_string())?;
+                        let json = serde_json::to_value(&idx).map_err(|e| e.to_string())?;
                         indexes.push(json);
                     }
                     Ok::<_, String>(indexes)
@@ -698,11 +698,7 @@ fn parse_update_doc<'js>(
     }
 }
 
-fn with_collection<'js, F, T>(
-    ctx: &Ctx<'js>,
-    collection_name: &str,
-    f: F,
-) -> rquickjs::Result<T>
+fn with_collection<'js, F, T>(ctx: &Ctx<'js>, collection_name: &str, f: F) -> rquickjs::Result<T>
 where
     F: FnOnce(
         mongodb::Collection<mongodb::bson::Document>,

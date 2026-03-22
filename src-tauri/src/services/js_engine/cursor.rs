@@ -4,7 +4,7 @@ use rquickjs::class::Trace;
 use rquickjs::prelude::{Opt, This};
 use rquickjs::{Class, Ctx, Function, JsLifetime, Value};
 
-use super::bson_convert::{bson_doc_to_json, json_to_bson_doc, json_to_js, js_to_json};
+use super::bson_convert::{bson_doc_to_json, js_to_json, json_to_bson_doc, json_to_js};
 use super::globals::throw_error;
 use super::ENGINE_STATE;
 
@@ -52,8 +52,7 @@ impl MongoCursor {
         sort_doc: Value<'js>,
     ) -> rquickjs::Result<Class<'js, Self>> {
         let json = js_to_json(&ctx, sort_doc)?;
-        let json_str =
-            serde_json::to_string(&json).map_err(|_| rquickjs::Error::Unknown)?;
+        let json_str = serde_json::to_string(&json).map_err(|_| rquickjs::Error::Unknown)?;
         this.0.borrow_mut().sort_json = json_str;
         Ok(this.0)
     }
@@ -64,8 +63,7 @@ impl MongoCursor {
         proj_doc: Value<'js>,
     ) -> rquickjs::Result<Class<'js, Self>> {
         let json = js_to_json(&ctx, proj_doc)?;
-        let json_str =
-            serde_json::to_string(&json).map_err(|_| rquickjs::Error::Unknown)?;
+        let json_str = serde_json::to_string(&json).map_err(|_| rquickjs::Error::Unknown)?;
         this.0.borrow_mut().projection_json = json_str;
         Ok(this.0)
     }
@@ -76,8 +74,7 @@ impl MongoCursor {
         proj_doc: Value<'js>,
     ) -> rquickjs::Result<Class<'js, Self>> {
         let json = js_to_json(&ctx, proj_doc)?;
-        let json_str =
-            serde_json::to_string(&json).map_err(|_| rquickjs::Error::Unknown)?;
+        let json_str = serde_json::to_string(&json).map_err(|_| rquickjs::Error::Unknown)?;
         this.0.borrow_mut().projection_json = json_str;
         Ok(this.0)
     }
@@ -109,18 +106,12 @@ impl MongoCursor {
         Ok(this.0)
     }
 
-    pub fn limit<'js>(
-        this: This<Class<'js, Self>>,
-        n: i64,
-    ) -> rquickjs::Result<Class<'js, Self>> {
+    pub fn limit<'js>(this: This<Class<'js, Self>>, n: i64) -> rquickjs::Result<Class<'js, Self>> {
         this.0.borrow_mut().limit_val = n;
         Ok(this.0)
     }
 
-    pub fn skip<'js>(
-        this: This<Class<'js, Self>>,
-        n: u64,
-    ) -> rquickjs::Result<Class<'js, Self>> {
+    pub fn skip<'js>(this: This<Class<'js, Self>>, n: u64) -> rquickjs::Result<Class<'js, Self>> {
         this.0.borrow_mut().skip_val = n;
         Ok(this.0)
     }
@@ -149,7 +140,11 @@ impl MongoCursor {
                 &params.projection,
                 &params.sort,
                 Some(effective_limit),
-                if params.skip > 0 { Some(params.skip) } else { None },
+                if params.skip > 0 {
+                    Some(params.skip)
+                } else {
+                    None
+                },
             );
 
             let result = state.handle.block_on(async {
@@ -204,9 +199,7 @@ impl MongoCursor {
                 let col = state
                     .db
                     .collection::<mongodb::bson::Document>(&collection_name);
-                col.count_documents(filter)
-                    .await
-                    .map_err(|e| e.to_string())
+                col.count_documents(filter).await.map_err(|e| e.to_string())
             });
 
             match result {
@@ -218,11 +211,7 @@ impl MongoCursor {
     }
 
     #[qjs(rename = "forEach")]
-    pub fn for_each<'js>(
-        &self,
-        ctx: Ctx<'js>,
-        callback: Function<'js>,
-    ) -> rquickjs::Result<()> {
+    pub fn for_each<'js>(&self, ctx: Ctx<'js>, callback: Function<'js>) -> rquickjs::Result<()> {
         let params = self.build_find_params(&ctx)?;
 
         ENGINE_STATE.with(|state| {
@@ -236,8 +225,16 @@ impl MongoCursor {
             let opts = build_find_options(
                 &params.projection,
                 &params.sort,
-                if params.limit > 0 { Some(params.limit) } else { None },
-                if params.skip > 0 { Some(params.skip) } else { None },
+                if params.limit > 0 {
+                    Some(params.limit)
+                } else {
+                    None
+                },
+                if params.skip > 0 {
+                    Some(params.skip)
+                } else {
+                    None
+                },
             );
 
             let docs = state.handle.block_on(async {
@@ -270,10 +267,7 @@ impl MongoCursor {
                         let json_val = match bson_doc_to_json(doc) {
                             Ok(v) => v,
                             Err(e) => {
-                                return Err(throw_error(
-                                    &ctx,
-                                    &format!("Serialization error: {e}"),
-                                ))
+                                return Err(throw_error(&ctx, &format!("Serialization error: {e}")))
                             }
                         };
                         let js_val = json_to_js(&ctx, &json_val)?;
@@ -320,12 +314,8 @@ impl MongoCursor {
     }
 }
 
-fn parse_json_to_doc(
-    ctx: &Ctx<'_>,
-    json_str: &str,
-) -> rquickjs::Result<mongodb::bson::Document> {
-    let value: serde_json::Value =
-        serde_json::from_str(json_str).unwrap_or(serde_json::json!({}));
+fn parse_json_to_doc(ctx: &Ctx<'_>, json_str: &str) -> rquickjs::Result<mongodb::bson::Document> {
+    let value: serde_json::Value = serde_json::from_str(json_str).unwrap_or(serde_json::json!({}));
     match json_to_bson_doc(&value) {
         Ok(doc) => Ok(doc),
         Err(e) => Err(throw_error(ctx, &format!("Invalid document: {e}"))),
@@ -336,8 +326,7 @@ fn parse_optional_json_to_doc(
     ctx: &Ctx<'_>,
     json_str: &str,
 ) -> rquickjs::Result<Option<mongodb::bson::Document>> {
-    let value: serde_json::Value =
-        serde_json::from_str(json_str).unwrap_or(serde_json::json!({}));
+    let value: serde_json::Value = serde_json::from_str(json_str).unwrap_or(serde_json::json!({}));
     if value.is_null() || value == serde_json::json!({}) {
         return Ok(None);
     }

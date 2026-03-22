@@ -1,13 +1,6 @@
-import { useMemo, useState, useCallback } from "react";
-import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  flexRender,
-  type ColumnDef,
-  type SortingState,
-} from "@tanstack/react-table";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { deleteDocument } from "@/api/document";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { openCloneDocumentTab, openEditDocumentTab } from "@/components/results/DocumentEditor";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -15,22 +8,18 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  Copy,
-  Pencil,
-  Trash2,
-  Files,
-} from "lucide-react";
+  type ColumnDef,
+  type SortingState,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { ArrowDown, ArrowUp, ArrowUpDown, Copy, Files, Pencil, Trash2 } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/common/ConfirmDialog";
-import {
-  openEditDocumentTab,
-  openCloneDocumentTab,
-} from "@/components/results/DocumentEditor";
-import { deleteDocument } from "@/api/document";
 
 interface TableViewProps {
   documents: Record<string, unknown>[];
@@ -48,9 +37,7 @@ export function TableView({
   colorFlag,
 }: TableViewProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [deleteDoc, setDeleteDoc] = useState<Record<string, unknown> | null>(
-    null,
-  );
+  const [deleteDoc, setDeleteDoc] = useState<Record<string, unknown> | null>(null);
 
   const hasContext = connectionId && database && collection;
 
@@ -79,21 +66,14 @@ export function TableView({
     if (!connectionId || !database || !collection || !deleteDoc?._id) return;
     try {
       const filter = { _id: deleteDoc._id };
-      const result = await deleteDocument(
-        connectionId,
-        database,
-        collection,
-        filter,
-      );
+      const result = await deleteDocument(connectionId, database, collection, filter);
       if (result.deletedCount > 0) {
         toast.success("Document deleted");
       } else {
         toast.error("Document not found");
       }
     } catch (err) {
-      toast.error(
-        `Delete failed: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      toast.error(`Delete failed: ${err instanceof Error ? err.message : String(err)}`);
     }
   }, [connectionId, database, collection, deleteDoc]);
 
@@ -167,10 +147,7 @@ export function TableView({
                     >
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                     </th>
                   ))}
                 </tr>
@@ -184,19 +161,14 @@ export function TableView({
                     <ContextMenuTrigger asChild>
                       <tr
                         className="cursor-pointer transition-colors hover:bg-accent/50"
-                        onDoubleClick={
-                          hasContext ? () => handleEdit(doc) : undefined
-                        }
+                        onDoubleClick={hasContext ? () => handleEdit(doc) : undefined}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <td
                             key={cell.id}
                             className="max-w-[300px] truncate border-b border-r border-border/50 px-2 py-1"
                           >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         ))}
                       </tr>
@@ -252,30 +224,19 @@ export function TableView({
 }
 
 function CellValue({ value }: { value: unknown }) {
-  if (value === null)
-    return <span className="text-muted-foreground/50">null</span>;
-  if (value === undefined)
-    return <span className="text-muted-foreground/50">&mdash;</span>;
-  if (typeof value === "string")
-    return <span className="text-green-400">{value}</span>;
-  if (typeof value === "number")
-    return <span className="text-blue-400">{value}</span>;
-  if (typeof value === "boolean")
-    return <span className="text-red-400">{String(value)}</span>;
+  if (value === null) return <span className="text-muted-foreground/50">null</span>;
+  if (value === undefined) return <span className="text-muted-foreground/50">&mdash;</span>;
+  if (typeof value === "string") return <span className="text-green-400">{value}</span>;
+  if (typeof value === "number") return <span className="text-blue-400">{value}</span>;
+  if (typeof value === "boolean") return <span className="text-red-400">{String(value)}</span>;
   if (Array.isArray(value))
-    return (
-      <span className="text-muted-foreground">[{value.length} items]</span>
-    );
+    return <span className="text-muted-foreground">[{value.length} items]</span>;
   if (typeof value === "object") {
     const obj = value as Record<string, unknown>;
-    if ("$oid" in obj)
-      return <span className="text-gray-400">{String(obj.$oid)}</span>;
-    if ("$date" in obj)
-      return <span className="text-purple-400">{String(obj.$date)}</span>;
+    if ("$oid" in obj) return <span className="text-gray-400">{String(obj.$oid)}</span>;
+    if ("$date" in obj) return <span className="text-purple-400">{String(obj.$date)}</span>;
     if ("$numberLong" in obj)
-      return (
-        <span className="text-blue-400">{String(obj.$numberLong)}</span>
-      );
+      return <span className="text-blue-400">{String(obj.$numberLong)}</span>;
     return <span className="text-muted-foreground">{"{...}"}</span>;
   }
   return <span>{String(value)}</span>;

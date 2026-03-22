@@ -1,16 +1,16 @@
-import { useState, useCallback, useEffect } from "react";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { listen } from "@tauri-apps/api/event";
-import { Toolbar } from "./Toolbar";
-import { Sidebar } from "./Sidebar";
-import { StatusBar } from "./StatusBar";
+import { CommandPalette } from "@/components/common/CommandPalette";
+import { ConnectionListDialog } from "@/components/connection/ConnectionListDialog";
 import { TabBar } from "@/components/tabs/TabBar";
 import { TabPanel } from "@/components/tabs/TabPanel";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ConnectionListDialog } from "@/components/connection/ConnectionListDialog";
-import { CommandPalette } from "@/components/common/CommandPalette";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useTabStore } from "@/stores/tabStore";
+import { listen } from "@tauri-apps/api/event";
+import { useCallback, useEffect, useState } from "react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { Sidebar } from "./Sidebar";
+import { StatusBar } from "./StatusBar";
+import { Toolbar } from "./Toolbar";
 
 export function AppShell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

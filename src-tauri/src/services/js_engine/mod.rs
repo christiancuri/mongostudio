@@ -75,14 +75,13 @@ pub fn execute(
         .map_err(|e| format!("Failed to create JS runtime: {e}"))?;
 
     // 3. Create context
-    let ctx = context::create_context(&rt)
-        .map_err(|e| format!("Failed to create JS context: {e}"))?;
+    let ctx =
+        context::create_context(&rt).map_err(|e| format!("Failed to create JS context: {e}"))?;
 
     // 4. Execute script within context
     // Returns (json_value, is_raw_output)
     let result = ctx.with(|ctx| -> Result<(serde_json::Value, bool), String> {
-        context::setup_context(&ctx)
-            .map_err(|e| format!("Failed to setup JS context: {e}"))?;
+        context::setup_context(&ctx).map_err(|e| format!("Failed to setup JS context: {e}"))?;
 
         let eval_result: rquickjs::Result<rquickjs::Value<'_>> = ctx.eval(script);
 
@@ -125,9 +124,10 @@ pub fn execute(
                                         let expr = format!("{var_name}.toArray()");
                                         let auto_result: rquickjs::Result<rquickjs::Value<'_>> =
                                             ctx.eval(expr.into_bytes());
-                                        if let Ok(Ok(array_val)) = auto_result.catch(&ctx).map(|v|
-                                            bson_convert::js_to_json(&ctx, v)
-                                        ) {
+                                        if let Ok(Ok(array_val)) = auto_result
+                                            .catch(&ctx)
+                                            .map(|v| bson_convert::js_to_json(&ctx, v))
+                                        {
                                             return Ok((array_val, false));
                                         }
                                     }
@@ -143,7 +143,9 @@ pub fn execute(
                     // 2. Fall back to last MongoDB query result
                     let fallback = ENGINE_STATE.with(|state| {
                         let state = state.borrow();
-                        state.as_ref().and_then(|s| s.last_query_result.borrow().clone())
+                        state
+                            .as_ref()
+                            .and_then(|s| s.last_query_result.borrow().clone())
                     });
                     if let Some(last) = fallback {
                         return Ok((last, false));

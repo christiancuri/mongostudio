@@ -1,7 +1,7 @@
 use std::sync::atomic::Ordering;
 
-use rquickjs::{Ctx, Function, Value};
 use rquickjs::prelude::Opt;
+use rquickjs::{Ctx, Function, Value};
 
 use super::ENGINE_STATE;
 
@@ -41,27 +41,30 @@ pub fn register_globals<'js>(ctx: &Ctx<'js>) -> rquickjs::Result<()> {
     // sleep(ms): pause execution, check cancel flag after
     globals.set(
         "sleep",
-        Function::new(ctx.clone(), |ctx: Ctx<'_>, ms: u64| -> rquickjs::Result<()> {
-            let total = std::time::Duration::from_millis(ms);
-            let increment = std::time::Duration::from_millis(100);
-            let start = std::time::Instant::now();
+        Function::new(
+            ctx.clone(),
+            |ctx: Ctx<'_>, ms: u64| -> rquickjs::Result<()> {
+                let total = std::time::Duration::from_millis(ms);
+                let increment = std::time::Duration::from_millis(100);
+                let start = std::time::Instant::now();
 
-            while start.elapsed() < total {
-                let remaining = total.saturating_sub(start.elapsed());
-                std::thread::sleep(remaining.min(increment));
+                while start.elapsed() < total {
+                    let remaining = total.saturating_sub(start.elapsed());
+                    std::thread::sleep(remaining.min(increment));
 
-                let cancelled = ENGINE_STATE.with(|state| {
-                    let state = state.borrow();
-                    state
-                        .as_ref()
-                        .map_or(false, |s| s.cancel_flag.load(Ordering::Relaxed))
-                });
-                if cancelled {
-                    return Err(throw_error(&ctx, "Query execution cancelled"));
+                    let cancelled = ENGINE_STATE.with(|state| {
+                        let state = state.borrow();
+                        state
+                            .as_ref()
+                            .map_or(false, |s| s.cancel_flag.load(Ordering::Relaxed))
+                    });
+                    if cancelled {
+                        return Err(throw_error(&ctx, "Query execution cancelled"));
+                    }
                 }
-            }
-            Ok(())
-        })?,
+                Ok(())
+            },
+        )?,
     )?;
 
     // ObjectId(str?): create an ObjectId extended JSON object
@@ -88,23 +91,17 @@ pub fn register_globals<'js>(ctx: &Ctx<'js>) -> rquickjs::Result<()> {
             ctx.clone(),
             |ctx: Ctx<'js>, date_str: Opt<String>| -> rquickjs::Result<Value<'js>> {
                 let dt = match date_str.0 {
-                    Some(s) => {
-                        chrono::DateTime::parse_from_rfc3339(&s)
-                            .map(|d| d.with_timezone(&chrono::Utc))
-                            .or_else(|_| {
-                                chrono::NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S%.fZ")
-                                    .map(|d| d.and_utc())
-                            })
-                            .or_else(|_| {
-                                chrono::NaiveDate::parse_from_str(&s, "%Y-%m-%d")
-                                    .map(|d| {
-                                        d.and_hms_opt(0, 0, 0)
-                                            .expect("valid HMS")
-                                            .and_utc()
-                                    })
-                            })
-                            .map_err(|e| throw_error(&ctx, &format!("Invalid date: {e}")))?
-                    }
+                    Some(s) => chrono::DateTime::parse_from_rfc3339(&s)
+                        .map(|d| d.with_timezone(&chrono::Utc))
+                        .or_else(|_| {
+                            chrono::NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S%.fZ")
+                                .map(|d| d.and_utc())
+                        })
+                        .or_else(|_| {
+                            chrono::NaiveDate::parse_from_str(&s, "%Y-%m-%d")
+                                .map(|d| d.and_hms_opt(0, 0, 0).expect("valid HMS").and_utc())
+                        })
+                        .map_err(|e| throw_error(&ctx, &format!("Invalid date: {e}")))?,
                     None => chrono::Utc::now(),
                 };
                 let json = serde_json::json!({"$date": dt.to_rfc3339()});

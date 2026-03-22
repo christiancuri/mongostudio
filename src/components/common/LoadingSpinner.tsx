@@ -1,5 +1,5 @@
-import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 interface LoadingSpinnerProps {
   className?: string;
@@ -13,9 +13,5 @@ export function LoadingSpinner({ className, size = "md" }: LoadingSpinnerProps) 
     lg: "h-8 w-8",
   }[size];
 
-  return (
-    <Loader2
-      className={cn("animate-spin text-muted-foreground", sizeClass, className)}
-    />
-  );
+  return <Loader2 className={cn("animate-spin text-muted-foreground", sizeClass, className)} />;
 }

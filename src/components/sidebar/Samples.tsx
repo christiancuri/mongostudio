@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { BookOpen, ChevronRight, ChevronDown, FileCode } from "lucide-react";
 import { useTabStore } from "@/stores/tabStore";
+import { BookOpen, ChevronDown, ChevronRight, FileCode } from "lucide-react";
+import { useState } from "react";
 
 interface SampleEntry {
   name: string;

@@ -1,12 +1,12 @@
-import { useState, useCallback } from "react";
-import { Loader2, RefreshCw, ChevronRight, ChevronDown } from "lucide-react";
+import { analyzeSchema } from "@/api/schema";
+import { TypeBadge } from "@/components/common/TypeBadge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { analyzeSchema } from "@/api/schema";
 import type { SchemaAnalysisResult, SchemaField } from "@/types/schema";
-import { TypeBadge } from "@/components/common/TypeBadge";
+import { ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 interface SchemaAnalysisProps {
   connectionId: string;
@@ -14,11 +14,7 @@ interface SchemaAnalysisProps {
   collection: string;
 }
 
-export function SchemaAnalysis({
-  connectionId,
-  database,
-  collection,
-}: SchemaAnalysisProps) {
+export function SchemaAnalysis({ connectionId, database, collection }: SchemaAnalysisProps) {
   const [result, setResult] = useState<SchemaAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [sampleSize] = useState(1000);
@@ -26,12 +22,7 @@ export function SchemaAnalysis({
   const handleAnalyze = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await analyzeSchema(
-        connectionId,
-        database,
-        collection,
-        sampleSize,
-      );
+      const data = await analyzeSchema(connectionId, database, collection, sampleSize);
       setResult(data);
       toast.success(`Analyzed ${data.documentsSampled} documents`);
     } catch (err) {
@@ -76,12 +67,8 @@ export function SchemaAnalysis({
         {!result && !loading && (
           <div className="flex h-full items-center justify-center p-8 text-muted-foreground">
             <div className="text-center">
-              <p className="text-sm">
-                Click &quot;Analyze&quot; to discover the collection schema
-              </p>
-              <p className="mt-1 text-xs">
-                Samples up to {sampleSize} documents
-              </p>
+              <p className="text-sm">Click &quot;Analyze&quot; to discover the collection schema</p>
+              <p className="mt-1 text-xs">Samples up to {sampleSize} documents</p>
             </div>
           </div>
         )}
@@ -123,8 +110,7 @@ function SchemaFieldNode({
 }) {
   const [expanded, setExpanded] = useState(depth < 2);
   const hasChildren = field.children.length > 0;
-  const presencePercent =
-    totalDocs > 0 ? ((field.totalCount / totalDocs) * 100).toFixed(1) : "0";
+  const presencePercent = totalDocs > 0 ? ((field.totalCount / totalDocs) * 100).toFixed(1) : "0";
 
   return (
     <div>
@@ -153,9 +139,7 @@ function SchemaFieldNode({
             </span>
           ))}
         </div>
-        <span className="ml-auto text-[9px] text-muted-foreground">
-          {presencePercent}%
-        </span>
+        <span className="ml-auto text-[9px] text-muted-foreground">{presencePercent}%</span>
       </div>
       {expanded && hasChildren && (
         <div>

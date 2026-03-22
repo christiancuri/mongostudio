@@ -1,11 +1,7 @@
-import { Play, Bug, Square, FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Bug, FileSearch, Play, Square } from "lucide-react";
 
 interface EditorToolbarProps {
   onRun?: () => void;

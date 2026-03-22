@@ -1,7 +1,7 @@
-import { X, Plus } from "lucide-react";
-import { useTabStore } from "@/stores/tabStore";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useTabStore } from "@/stores/tabStore";
+import { Plus, X } from "lucide-react";
 
 export function TabBar() {
   const { tabs, activeTabId, setActiveTab, removeTab, addTab } = useTabStore();
@@ -19,12 +19,7 @@ export function TabBar() {
   if (tabs.length === 0) {
     return (
       <div className="flex h-9 items-center border-b border-border bg-background px-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 gap-1 px-2 text-xs"
-          onClick={handleNewTab}
-        >
+        <Button variant="ghost" size="sm" className="h-6 gap-1 px-2 text-xs" onClick={handleNewTab}>
           <Plus className="h-3 w-3" />
           New Tab
         </Button>
@@ -41,15 +36,11 @@ export function TabBar() {
             type="button"
             className={cn(
               "group relative flex h-9 min-w-[120px] max-w-[250px] items-center gap-1.5 border-r border-border px-3 text-xs transition-colors",
-              activeTabId === tab.id
-                ? "bg-background"
-                : "bg-muted/50 hover:bg-muted",
+              activeTabId === tab.id ? "bg-background" : "bg-muted/50 hover:bg-muted",
             )}
             onClick={() => setActiveTab(tab.id)}
           >
-            {tab.dirty && (
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500" />
-            )}
+            {tab.dirty && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-500" />}
             <span
               className="truncate"
               style={tab.colorFlag ? { color: getColorHex(tab.colorFlag) } : undefined}
@@ -69,7 +60,11 @@ export function TabBar() {
             {activeTabId === tab.id && (
               <div
                 className="absolute bottom-0 left-0 right-0 h-0.5"
-                style={{ backgroundColor: tab.colorFlag ? getColorHex(tab.colorFlag) : "var(--color-primary)" }}
+                style={{
+                  backgroundColor: tab.colorFlag
+                    ? getColorHex(tab.colorFlag)
+                    : "var(--color-primary)",
+                }}
               />
             )}
           </button>

@@ -1,5 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
 import type { ConnectionConfig } from "@/types/connection";
+import { invoke } from "@tauri-apps/api/core";
 
 export async function connect(config: ConnectionConfig): Promise<string> {
   return invoke("connect", { config });

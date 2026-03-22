@@ -1,11 +1,6 @@
-import { useState, useMemo } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -13,8 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Copy, Code2 } from "lucide-react";
+import { Code2, Copy } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface CodeGeneratorProps {
@@ -25,14 +20,7 @@ interface CodeGeneratorProps {
   database: string;
 }
 
-type Language =
-  | "nodejs"
-  | "python"
-  | "java"
-  | "csharp"
-  | "go"
-  | "ruby"
-  | "php";
+type Language = "nodejs" | "python" | "java" | "csharp" | "go" | "ruby" | "php";
 
 const LANGUAGES: { value: Language; label: string }[] = [
   { value: "nodejs", label: "Node.js" },
@@ -55,7 +43,7 @@ export function CodeGenerator({
 
   const generated = useMemo(
     () => generateCode(query, collection, database, language),
-    [query, collection, database, language]
+    [query, collection, database, language],
   );
 
   const handleCopy = () => {
@@ -74,10 +62,7 @@ export function CodeGenerator({
         </DialogHeader>
 
         <div className="flex items-center gap-3">
-          <Select
-            value={language}
-            onValueChange={(v) => setLanguage(v as Language)}
-          >
+          <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
             <SelectTrigger className="h-8 w-[150px] text-sm">
               <SelectValue />
             </SelectTrigger>
@@ -89,12 +74,7 @@ export function CodeGenerator({
               ))}
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1.5"
-            onClick={handleCopy}
-          >
+          <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={handleCopy}>
             <Copy className="h-3 w-3" />
             Copy
           </Button>
@@ -102,9 +82,7 @@ export function CodeGenerator({
 
         <div className="space-y-2">
           <div className="rounded border border-border bg-muted/30 p-2">
-            <p className="text-[10px] text-muted-foreground mb-1">
-              Source query:
-            </p>
+            <p className="text-[10px] text-muted-foreground mb-1">Source query:</p>
             <pre className="font-mono text-xs text-foreground whitespace-pre-wrap">
               {query || "No query"}
             </pre>
@@ -112,9 +90,7 @@ export function CodeGenerator({
         </div>
 
         <ScrollArea className="flex-1 rounded border border-border bg-[#1e1e1e] p-3">
-          <pre className="font-mono text-xs text-[#d4d4d4] whitespace-pre-wrap">
-            {generated}
-          </pre>
+          <pre className="font-mono text-xs text-[#d4d4d4] whitespace-pre-wrap">{generated}</pre>
         </ScrollArea>
       </DialogContent>
     </Dialog>
@@ -125,7 +101,7 @@ function generateCode(
   query: string,
   collection: string,
   database: string,
-  language: Language
+  language: Language,
 ): string {
   const parsed = parseShellQuery(query);
   if (!parsed) {
@@ -172,11 +148,7 @@ function parseShellQuery(query: string): ParsedShellQuery | null {
   return { method, args };
 }
 
-function generateNodeJs(
-  parsed: ParsedShellQuery,
-  collection: string,
-  database: string
-): string {
+function generateNodeJs(parsed: ParsedShellQuery, collection: string, database: string): string {
   const args = parsed.args[0] ?? "{}";
 
   return `const { MongoClient } = require("mongodb");
@@ -191,7 +163,7 @@ async function main() {
     const collection = db.collection("${collection}");
 
     const result = await collection.${parsed.method}(${args});
-    ${parsed.method === "find" ? 'const docs = await result.toArray();\n    console.log(docs);' : "console.log(result);"}
+    ${parsed.method === "find" ? "const docs = await result.toArray();\n    console.log(docs);" : "console.log(result);"}
   } finally {
     await client.close();
   }
@@ -200,11 +172,7 @@ async function main() {
 main().catch(console.error);`;
 }
 
-function generatePython(
-  parsed: ParsedShellQuery,
-  collection: string,
-  database: string
-): string {
+function generatePython(parsed: ParsedShellQuery, collection: string, database: string): string {
   const args = parsed.args[0] ?? "{}";
 
   return `from pymongo import MongoClient
@@ -219,11 +187,7 @@ ${parsed.method === "find" ? "for doc in result:\n    print(doc)" : "print(resul
 client.close()`;
 }
 
-function generateJava(
-  parsed: ParsedShellQuery,
-  collection: string,
-  database: string
-): string {
+function generateJava(parsed: ParsedShellQuery, collection: string, database: string): string {
   const args = parsed.args[0] ?? "{}";
   const methodMap: Record<string, string> = {
     find: "find",
@@ -263,14 +227,9 @@ public class MongoQuery {
 }`;
 }
 
-function generateCSharp(
-  parsed: ParsedShellQuery,
-  collection: string,
-  database: string
-): string {
+function generateCSharp(parsed: ParsedShellQuery, collection: string, database: string): string {
   const args = parsed.args[0] ?? "{}";
-  const csMethod =
-    parsed.method.charAt(0).toUpperCase() + parsed.method.slice(1);
+  const csMethod = parsed.method.charAt(0).toUpperCase() + parsed.method.slice(1);
 
   return `using MongoDB.Driver;
 using MongoDB.Bson;
@@ -292,11 +251,7 @@ Console.WriteLine(result);`
 }`;
 }
 
-function generateGo(
-  parsed: ParsedShellQuery,
-  collection: string,
-  database: string
-): string {
+function generateGo(parsed: ParsedShellQuery, collection: string, database: string): string {
   const args = parsed.args[0] ?? "{}";
 
   return `package main
@@ -344,11 +299,7 @@ ${
 }`;
 }
 
-function generateRuby(
-  parsed: ParsedShellQuery,
-  collection: string,
-  database: string
-): string {
+function generateRuby(parsed: ParsedShellQuery, collection: string, database: string): string {
   const args = parsed.args[0] ?? "{}";
   const rubyMethod = toSnakeCase(parsed.method);
 
@@ -363,11 +314,7 @@ ${parsed.method === "find" ? "result.each do |doc|\n  puts doc\nend" : "puts res
 client.close`;
 }
 
-function generatePhp(
-  parsed: ParsedShellQuery,
-  collection: string,
-  database: string
-): string {
+function generatePhp(parsed: ParsedShellQuery, collection: string, database: string): string {
   const args = parsed.args[0] ?? "{}";
   const phpMethod = parsed.method;
 

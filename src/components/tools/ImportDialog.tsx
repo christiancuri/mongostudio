@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { importData } from "@/api/importExport";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,9 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileUp, Loader2, FolderOpen } from "lucide-react";
+import { FileUp, FolderOpen, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { importData } from "@/api/importExport";
 
 interface ImportDialogProps {
   open: boolean;
@@ -47,13 +47,7 @@ export function ImportDialog({
     }
     setImporting(true);
     try {
-      const result = await importData(
-        connectionId,
-        database,
-        targetCollection,
-        filePath,
-        format,
-      );
+      const result = await importData(connectionId, database, targetCollection, filePath, format);
       toast.success(`Imported ${result.imported} documents`);
       onOpenChange(false);
     } catch (err) {
@@ -91,10 +85,7 @@ export function ImportDialog({
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Format</Label>
-            <Select
-              value={format}
-              onValueChange={(v) => setFormat(v as "json" | "csv")}
-            >
+            <Select value={format} onValueChange={(v) => setFormat(v as "json" | "csv")}>
               <SelectTrigger className="h-8 text-sm">
                 <SelectValue />
               </SelectTrigger>
@@ -119,11 +110,7 @@ export function ImportDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-          >
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button
@@ -131,9 +118,7 @@ export function ImportDialog({
             onClick={handleImport}
             disabled={importing || !filePath || !targetCollection}
           >
-            {importing && (
-              <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-            )}
+            {importing && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
             Import
           </Button>
         </DialogFooter>

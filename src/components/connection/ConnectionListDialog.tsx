@@ -1,31 +1,19 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { readText } from "@tauri-apps/plugin-clipboard-manager";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  ChevronDown,
-  Copy,
-  Link,
-  Pencil,
-  Play,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react";
-import { toast } from "sonner";
-import { useConnectionStore } from "@/stores/connectionStore";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useConnection } from "@/hooks/useConnection";
+import { useConnectionStore } from "@/stores/connectionStore";
 import type { ConnectionConfig } from "@/types/connection";
-import {
-  getConnectionServer,
-  getConnectionSecurity,
-} from "@/types/connection";
+import { getConnectionSecurity, getConnectionServer } from "@/types/connection";
+import { readText } from "@tauri-apps/plugin-clipboard-manager";
+import { ChevronDown, Copy, Link, Pencil, Play, Plus, Trash2, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { ConnectionEditDialog } from "./ConnectionEditDialog";
 import { ConnectionUriDialog } from "./ConnectionUriDialog";
 
@@ -41,16 +29,9 @@ const MIN_H = 350;
 
 type Edge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
-export function ConnectionListDialog({
-  open,
-  onOpenChange,
-}: ConnectionListDialogProps) {
+export function ConnectionListDialog({ open, onOpenChange }: ConnectionListDialogProps) {
   const savedConnections = useConnectionStore((s) => s.savedConnections);
-  const {
-    removeSavedConnection,
-    addSavedConnection,
-    updateSavedConnection,
-  } = useConnectionStore();
+  const { removeSavedConnection, addSavedConnection, updateSavedConnection } = useConnectionStore();
   const { connectToServer, testConnectionConfig } = useConnection();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -86,8 +67,7 @@ export function ConnectionListDialog({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, editDialog.open, uriDialogOpen, onOpenChange]);
 
-  const selectedConfig =
-    savedConnections.find((c) => c.id === selectedId) ?? null;
+  const selectedConfig = savedConnections.find((c) => c.id === selectedId) ?? null;
 
   // Resize
   const startResize = useCallback((e: React.MouseEvent, edge: Edge) => {
@@ -117,8 +97,8 @@ export function ConnectionListDialog({
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
-      let w = startW,
-        h = startH;
+      let w = startW;
+      let h = startH;
       if (edge.includes("e")) w = startW + dx * 2;
       if (edge.includes("w")) w = startW - dx * 2;
       if (edge.includes("s")) h = startH + dy * 2;
@@ -162,9 +142,7 @@ export function ConnectionListDialog({
     if (!selectedId) return;
     const name = selectedConfig?.name;
     removeSavedConnection(selectedId);
-    setSelectedId(
-      savedConnections.filter((c) => c.id !== selectedId)[0]?.id ?? null,
-    );
+    setSelectedId(savedConnections.filter((c) => c.id !== selectedId)[0]?.id ?? null);
     toast.success(`Deleted "${name}"`);
   }, [selectedId, selectedConfig, removeSavedConnection, savedConnections]);
 
@@ -244,12 +222,7 @@ export function ConnectionListDialog({
       setEditDialog({ open: false, config: null });
       await handleConnect(config);
     },
-    [
-      savedConnections,
-      updateSavedConnection,
-      addSavedConnection,
-      handleConnect,
-    ],
+    [savedConnections, updateSavedConnection, addSavedConnection, handleConnect],
   );
 
   // URI dialog completed -> open edit with parsed config
@@ -486,9 +459,7 @@ export function ConnectionListDialog({
               <thead className="sticky top-0 bg-muted z-10">
                 <tr className="border-b border-border">
                   <th className="text-left px-3 py-1.5 font-medium text-muted-foreground w-[3px]" />
-                  <th className="text-left px-3 py-1.5 font-medium text-muted-foreground">
-                    Name
-                  </th>
+                  <th className="text-left px-3 py-1.5 font-medium text-muted-foreground">Name</th>
                   <th className="text-left px-3 py-1.5 font-medium text-muted-foreground">
                     Server
                   </th>
@@ -506,12 +477,8 @@ export function ConnectionListDialog({
               <tbody>
                 {savedConnections.length === 0 && (
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="text-center py-12 text-muted-foreground"
-                    >
-                      No saved connections. Click "+ New Connection" to create
-                      one.
+                    <td colSpan={6} className="text-center py-12 text-muted-foreground">
+                      No saved connections. Click "+ New Connection" to create one.
                     </td>
                   </tr>
                 )}
@@ -530,16 +497,14 @@ export function ConnectionListDialog({
                         <div
                           className="w-[3px] h-full min-h-[32px]"
                           style={{
-                            backgroundColor:
-                              COLOR_HEX[conn.colorFlag] ?? COLOR_HEX.gray,
+                            backgroundColor: COLOR_HEX[conn.colorFlag] ?? COLOR_HEX.gray,
                           }}
                         />
                       </td>
                       <td
                         className="px-3 py-1.5 font-medium"
                         style={{
-                          color:
-                            COLOR_HEX[conn.colorFlag] ?? COLOR_HEX.gray,
+                          color: COLOR_HEX[conn.colorFlag] ?? COLOR_HEX.gray,
                         }}
                       >
                         {conn.name}
@@ -553,8 +518,7 @@ export function ConnectionListDialog({
                       <td
                         className="px-3 py-1.5"
                         style={{
-                          color:
-                            COLOR_HEX[conn.colorFlag] ?? COLOR_HEX.gray,
+                          color: COLOR_HEX[conn.colorFlag] ?? COLOR_HEX.gray,
                         }}
                       >
                         {conn.colorFlag}
@@ -579,11 +543,7 @@ export function ConnectionListDialog({
           >
             Connect
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-          >
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
         </div>

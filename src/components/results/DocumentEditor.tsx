@@ -71,7 +71,7 @@ export function openCloneDocumentTab(
 
   // Remove _id for clone
   const cloneDoc = { ...document };
-  delete cloneDoc._id;
+  cloneDoc._id = undefined;
 
   const fields = Object.entries(cloneDoc)
     .map(([key, value]) => `  ${key}: ${formatBsonValue(value)}`)
@@ -112,7 +112,7 @@ function formatDocId(id: unknown): string {
   return String(id);
 }
 
-function formatBsonValue(value: unknown, indent: number = 4): string {
+function formatBsonValue(value: unknown, indent = 4): string {
   if (value === null) return "null";
   if (value === undefined) return "undefined";
   if (typeof value === "string") return `"${value.replace(/"/g, '\\"')}"`;
@@ -126,17 +126,14 @@ function formatBsonValue(value: unknown, indent: number = 4): string {
     if ("$oid" in obj) return `ObjectId("${obj.$oid}")`;
     if ("$date" in obj) return `ISODate("${obj.$date}")`;
     if ("$numberLong" in obj) return `NumberLong("${obj.$numberLong}")`;
-    if ("$numberDecimal" in obj)
-      return `NumberDecimal("${obj.$numberDecimal}")`;
+    if ("$numberDecimal" in obj) return `NumberDecimal("${obj.$numberDecimal}")`;
     if ("$regex" in obj) return `/${obj.$regex}/${obj.$options ?? ""}`;
 
     if (Array.isArray(value)) {
       if (value.length === 0) return "[]";
       const spaces = " ".repeat(indent);
       const innerSpaces = " ".repeat(indent + 2);
-      const items = value
-        .map((v) => `${innerSpaces}${formatBsonValue(v, indent + 2)}`)
-        .join(",\n");
+      const items = value.map((v) => `${innerSpaces}${formatBsonValue(v, indent + 2)}`).join(",\n");
       return `[\n${items}\n${spaces}]`;
     }
 
@@ -145,9 +142,7 @@ function formatBsonValue(value: unknown, indent: number = 4): string {
     const spaces = " ".repeat(indent);
     const innerSpaces = " ".repeat(indent + 2);
     const fields = entries
-      .map(
-        ([k, v]) => `${innerSpaces}${k}: ${formatBsonValue(v, indent + 2)}`,
-      )
+      .map(([k, v]) => `${innerSpaces}${k}: ${formatBsonValue(v, indent + 2)}`)
       .join(",\n");
     return `{\n${fields}\n${spaces}}`;
   }

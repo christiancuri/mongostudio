@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { exportData } from "@/api/importExport";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,9 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileDown, Loader2, FolderOpen } from "lucide-react";
+import { FileDown, FolderOpen, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { exportData } from "@/api/importExport";
 
 interface ExportDialogProps {
   open: boolean;
@@ -46,13 +46,7 @@ export function ExportDialog({
     }
     setExporting(true);
     try {
-      const result = await exportData(
-        connectionId,
-        database,
-        collection,
-        filePath,
-        format,
-      );
+      const result = await exportData(connectionId, database, collection, filePath, format);
       toast.success(`Exported ${result.exported} documents`);
       onOpenChange(false);
     } catch (err) {
@@ -80,10 +74,7 @@ export function ExportDialog({
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Format</Label>
-            <Select
-              value={format}
-              onValueChange={(v) => setFormat(v as "json" | "csv")}
-            >
+            <Select value={format} onValueChange={(v) => setFormat(v as "json" | "csv")}>
               <SelectTrigger className="h-8 text-sm">
                 <SelectValue />
               </SelectTrigger>
@@ -109,21 +100,11 @@ export function ExportDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-          >
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            size="sm"
-            onClick={handleExport}
-            disabled={exporting || !filePath}
-          >
-            {exporting && (
-              <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-            )}
+          <Button size="sm" onClick={handleExport} disabled={exporting || !filePath}>
+            {exporting && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
             Export
           </Button>
         </DialogFooter>

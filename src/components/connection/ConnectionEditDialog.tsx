@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Database, Loader2, X } from "lucide-react";
-import { toast } from "sonner";
+import { useConnection } from "@/hooks/useConnection";
 import type { ConnectionConfig } from "@/types/connection";
 import { createDefaultConnection } from "@/types/connection";
+import { Database, Loader2, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { ConnectionForm } from "./ConnectionForm";
-import { useConnection } from "@/hooks/useConnection";
 
 interface ConnectionEditDialogProps {
   open: boolean;
@@ -29,9 +29,7 @@ export function ConnectionEditDialog({
   onSave,
   onConnect,
 }: ConnectionEditDialogProps) {
-  const [editConfig, setEditConfig] = useState<ConnectionConfig>(
-    createDefaultConnection(),
-  );
+  const [editConfig, setEditConfig] = useState<ConnectionConfig>(createDefaultConnection());
   const [testing, setTesting] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [testResult, setTestResult] = useState<{
@@ -54,13 +52,10 @@ export function ConnectionEditDialog({
     }
   }, [open, config]);
 
-  const handleChange = useCallback(
-    (updates: Partial<ConnectionConfig>) => {
-      setEditConfig((prev) => ({ ...prev, ...updates }));
-      setTestResult(null);
-    },
-    [],
-  );
+  const handleChange = useCallback((updates: Partial<ConnectionConfig>) => {
+    setEditConfig((prev) => ({ ...prev, ...updates }));
+    setTestResult(null);
+  }, []);
 
   const handleTest = useCallback(async () => {
     setTesting(true);
@@ -112,8 +107,8 @@ export function ConnectionEditDialog({
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
-      let w = startW,
-        h = startH;
+      let w = startW;
+      let h = startH;
       if (edge.includes("e")) w = startW + dx * 2;
       if (edge.includes("w")) w = startW - dx * 2;
       if (edge.includes("s")) h = startH + dy * 2;
@@ -267,29 +262,14 @@ export function ConnectionEditDialog({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTest}
-              disabled={testing}
-            >
-              {testing ? (
-                <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-              ) : null}
+            <Button variant="outline" size="sm" onClick={handleTest} disabled={testing}>
+              {testing ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : null}
               Test
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onSave(editConfig)}
-            >
+            <Button variant="outline" size="sm" onClick={() => onSave(editConfig)}>
               Save
             </Button>
-            <Button
-              size="sm"
-              onClick={handleConnect}
-              disabled={connecting}
-            >
+            <Button size="sm" onClick={handleConnect} disabled={connecting}>
               {connecting ? (
                 <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
               ) : (

@@ -1,5 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
 import type { ExplainResult, QueryRequest, QueryResult } from "@/types/query";
+import { invoke } from "@tauri-apps/api/core";
 
 export async function executeQuery(request: QueryRequest): Promise<QueryResult> {
   return invoke("execute_query", { request });

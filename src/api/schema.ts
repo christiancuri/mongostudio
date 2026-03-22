@@ -1,5 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
 import type { SchemaAnalysisResult } from "@/types/schema";
+import { invoke } from "@tauri-apps/api/core";
 
 export async function analyzeSchema(
   connectionId: string,

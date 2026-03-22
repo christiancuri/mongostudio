@@ -1,21 +1,10 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { deleteDocument, updateDocument } from "@/api/document";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import {
-  ChevronRight,
-  ChevronDown,
-  Copy,
-  Pencil,
-  Trash2,
-  Files,
-  Filter,
-  ArrowUpDown,
-  Columns3,
-  Group,
-  FileText,
-  Plus,
-  ChevronsUpDown,
-  ChevronsDownUp,
-} from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+  openCloneDocumentTab,
+  openEditDocumentTab,
+  openInsertDocumentTab,
+} from "@/components/results/DocumentEditor";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -26,15 +15,26 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { toast } from "sonner";
-import {
-  openEditDocumentTab,
-  openCloneDocumentTab,
-  openInsertDocumentTab,
-} from "@/components/results/DocumentEditor";
-import { deleteDocument, updateDocument } from "@/api/document";
-import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { dbCol } from "@/utils/mongo";
+import {
+  ArrowUpDown,
+  ChevronDown,
+  ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Columns3,
+  Copy,
+  FileText,
+  Files,
+  Filter,
+  Group,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface TreeViewProps {
   documents: Record<string, unknown>[];
@@ -84,7 +84,11 @@ function formatValue(value: unknown): string {
       let d: Date;
       if (typeof raw === "string") {
         d = new Date(raw);
-      } else if (typeof raw === "object" && raw !== null && "$numberLong" in (raw as Record<string, unknown>)) {
+      } else if (
+        typeof raw === "object" &&
+        raw !== null &&
+        "$numberLong" in (raw as Record<string, unknown>)
+      ) {
         d = new Date(Number((raw as Record<string, unknown>).$numberLong));
       } else if (typeof raw === "number") {
         d = new Date(raw);
@@ -342,10 +346,7 @@ function FieldContextMenu({
           <ContextMenuSubContent className="w-72">
             <ContextMenuItem
               onClick={() =>
-                copyToClipboard(
-                  `${colExpr}.find({ ${fieldPath}: ${queryVal} })`,
-                  "filter query",
-                )
+                copyToClipboard(`${colExpr}.find({ ${fieldPath}: ${queryVal} })`, "filter query")
               }
             >
               == {formatValue(localValue)}
@@ -479,20 +480,14 @@ function FieldContextMenu({
           <ContextMenuSubContent>
             <ContextMenuItem
               onClick={() =>
-                copyToClipboard(
-                  `${colExpr}.find({}).sort({ ${fieldPath}: 1 })`,
-                  "sort query",
-                )
+                copyToClipboard(`${colExpr}.find({}).sort({ ${fieldPath}: 1 })`, "sort query")
               }
             >
               Ascending (1)
             </ContextMenuItem>
             <ContextMenuItem
               onClick={() =>
-                copyToClipboard(
-                  `${colExpr}.find({}).sort({ ${fieldPath}: -1 })`,
-                  "sort query",
-                )
+                copyToClipboard(`${colExpr}.find({}).sort({ ${fieldPath}: -1 })`, "sort query")
               }
             >
               Descending (-1)
@@ -547,18 +542,13 @@ function FieldContextMenu({
                 Clone Document
               </ContextMenuItem>
               <ContextMenuItem
-                onClick={() =>
-                  openInsertDocumentTab(connectionId, database, collection, colorFlag)
-                }
+                onClick={() => openInsertDocumentTab(connectionId, database, collection, colorFlag)}
               >
                 <Plus className="mr-2 h-3 w-3" />
                 Insert New Document
               </ContextMenuItem>
               <ContextMenuSeparator />
-              <ContextMenuItem
-                className="text-destructive"
-                onClick={() => onDelete(doc)}
-              >
+              <ContextMenuItem className="text-destructive" onClick={() => onDelete(doc)}>
                 <Trash2 className="mr-2 h-3 w-3" />
                 Delete Document
               </ContextMenuItem>
@@ -576,23 +566,15 @@ function FieldContextMenu({
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-64">
             <ContextMenuItem
-              onClick={() =>
-                copyToClipboard(formatValue(localValue), "value as plain text")
-              }
+              onClick={() => copyToClipboard(formatValue(localValue), "value as plain text")}
             >
               Copy Value as Plain Text
             </ContextMenuItem>
-            <ContextMenuItem
-              onClick={() =>
-                copyToClipboard(formatJsonValue(localValue), "value")
-              }
-            >
+            <ContextMenuItem onClick={() => copyToClipboard(formatJsonValue(localValue), "value")}>
               Copy Value
             </ContextMenuItem>
             <ContextMenuSeparator />
-            <ContextMenuItem
-              onClick={() => copyToClipboard(fieldPath, "field path")}
-            >
+            <ContextMenuItem onClick={() => copyToClipboard(fieldPath, "field path")}>
               Copy Field Path
             </ContextMenuItem>
             <ContextMenuSeparator />
@@ -618,9 +600,7 @@ function FieldContextMenu({
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
-              onClick={() =>
-                copyToClipboard(JSON.stringify(doc, null, 2), "document")
-              }
+              onClick={() => copyToClipboard(JSON.stringify(doc, null, 2), "document")}
             >
               Copy Document
             </ContextMenuItem>
@@ -631,10 +611,7 @@ function FieldContextMenu({
         <ContextMenuSeparator />
         <ContextMenuItem
           onClick={() =>
-            copyToClipboard(
-              `${colExpr}.createIndex({ ${fieldPath}: 1 })`,
-              "create index query",
-            )
+            copyToClipboard(`${colExpr}.createIndex({ ${fieldPath}: 1 })`, "create index query")
           }
         >
           Create Index on "{fieldKey}"
@@ -714,19 +691,25 @@ function DocumentHeaderContextMenu({
               </ContextMenuSubTrigger>
               <ContextMenuSubContent className="w-52">
                 <ContextMenuItem
-                  onClick={() => openEditDocumentTab(connectionId, database, collection, doc, colorFlag)}
+                  onClick={() =>
+                    openEditDocumentTab(connectionId, database, collection, doc, colorFlag)
+                  }
                 >
                   <Pencil className="mr-2 h-3 w-3" />
                   Edit Document
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => openCloneDocumentTab(connectionId, database, collection, doc, colorFlag)}
+                  onClick={() =>
+                    openCloneDocumentTab(connectionId, database, collection, doc, colorFlag)
+                  }
                 >
                   <Files className="mr-2 h-3 w-3" />
                   Clone Document
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => openInsertDocumentTab(connectionId, database, collection, colorFlag)}
+                  onClick={() =>
+                    openInsertDocumentTab(connectionId, database, collection, colorFlag)
+                  }
                 >
                   <Plus className="mr-2 h-3 w-3" />
                   Insert New Document
@@ -754,9 +737,7 @@ function DocumentHeaderContextMenu({
             >
               Copy Document as JSON
             </ContextMenuItem>
-            <ContextMenuItem
-              onClick={() => copyToClipboard(getDocId(doc), "document ID")}
-            >
+            <ContextMenuItem onClick={() => copyToClipboard(getDocId(doc), "document ID")}>
               Copy Document ID
             </ContextMenuItem>
           </ContextMenuSubContent>
@@ -770,12 +751,16 @@ function DocumentHeaderContextMenu({
               <ContextMenuSubTrigger>Create Index...</ContextMenuSubTrigger>
               <ContextMenuSubContent className="w-56">
                 <ContextMenuItem
-                  onClick={() => copyToClipboard(`${dbCol(col)}.createIndex({ _id: 1 })`, "create index query")}
+                  onClick={() =>
+                    copyToClipboard(`${dbCol(col)}.createIndex({ _id: 1 })`, "create index query")
+                  }
                 >
                   Ascending (1)
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => copyToClipboard(`${dbCol(col)}.createIndex({ _id: -1 })`, "create index query")}
+                  onClick={() =>
+                    copyToClipboard(`${dbCol(col)}.createIndex({ _id: -1 })`, "create index query")
+                  }
                 >
                   Descending (-1)
                 </ContextMenuItem>
@@ -836,9 +821,7 @@ export function TreeView({
               <th className="min-w-[180px] w-[250px] px-2 py-1 text-left font-medium text-muted-foreground">
                 Key
               </th>
-              <th className="px-2 py-1 text-left font-medium text-muted-foreground">
-                Value
-              </th>
+              <th className="px-2 py-1 text-left font-medium text-muted-foreground">Value</th>
               <th className="w-[90px] px-2 py-1 text-left font-medium text-muted-foreground">
                 Type
               </th>
@@ -864,9 +847,7 @@ export function TreeView({
 
       <ConfirmDialog
         open={deleteDialog.open}
-        onOpenChange={(open) =>
-          !open && setDeleteDialog({ open: false, doc: null })
-        }
+        onOpenChange={(open) => !open && setDeleteDialog({ open: false, doc: null })}
         title="Delete Document"
         description="Are you sure you want to delete this document? This action cannot be undone."
         confirmLabel="Delete"
@@ -931,14 +912,7 @@ function DocumentRows({
           className="cursor-pointer border-b border-border/30 bg-amber-500/10 hover:bg-amber-500/15"
           onClick={() => setExpanded(!expanded)}
           onDoubleClick={() =>
-            hasContext &&
-            openEditDocumentTab(
-              connectionId!,
-              database!,
-              collection!,
-              doc,
-              colorFlag,
-            )
+            hasContext && openEditDocumentTab(connectionId!, database!, collection!, doc, colorFlag)
           }
         >
           <td className="px-2 py-1 whitespace-nowrap">
@@ -950,8 +924,7 @@ function DocumentRows({
               )}
               <TypeIcon type="Document" />
               <span className="font-medium text-amber-300">
-                ({index + 1}){" "}
-                {docId.length > 24 ? docId.slice(0, 24) + "..." : docId}
+                ({index + 1}) {docId.length > 24 ? `${docId.slice(0, 24)}...` : docId}
               </span>
             </div>
           </td>
@@ -1057,9 +1030,15 @@ function FieldRow({
     if (newValue === localValue) return; // no change
 
     try {
-      await updateDocument(connectionId, database, collection, { _id: docId }, {
-        $set: { [fieldPath]: newValue },
-      });
+      await updateDocument(
+        connectionId,
+        database,
+        collection,
+        { _id: docId },
+        {
+          $set: { [fieldPath]: newValue },
+        },
+      );
       setLocalValue(newValue);
       toast.success(`Updated ${fieldPath}`);
     } catch (err) {
@@ -1121,9 +1100,7 @@ function FieldRow({
               <TypeIcon type={type} />
               <span className="text-foreground">{fieldKey}</span>
               {fieldKey === "_id" && (
-                <span className="ml-1 text-[9px] text-muted-foreground/50">
-                  (asc index)
-                </span>
+                <span className="ml-1 text-[9px] text-muted-foreground/50">(asc index)</span>
               )}
             </div>
           </td>
@@ -1185,7 +1162,11 @@ function getRawEditValue(value: unknown): string {
     if ("$date" in obj) {
       const raw = obj.$date;
       if (typeof raw === "string") return raw;
-      if (typeof raw === "object" && raw !== null && "$numberLong" in (raw as Record<string, unknown>)) {
+      if (
+        typeof raw === "object" &&
+        raw !== null &&
+        "$numberLong" in (raw as Record<string, unknown>)
+      ) {
         return new Date(Number((raw as Record<string, unknown>).$numberLong)).toISOString();
       }
       if (typeof raw === "number") return new Date(raw).toISOString();

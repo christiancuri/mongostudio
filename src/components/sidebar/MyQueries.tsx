@@ -1,4 +1,3 @@
-import { FileCode, Trash2 } from "lucide-react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -6,8 +5,9 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { useQueryLibraryStore, type SavedQuery } from "@/stores/queryLibraryStore";
+import { type SavedQuery, useQueryLibraryStore } from "@/stores/queryLibraryStore";
 import { useTabStore } from "@/stores/tabStore";
+import { FileCode, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function MyQueries() {

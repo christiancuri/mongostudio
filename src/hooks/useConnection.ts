@@ -1,7 +1,7 @@
-import { useConnectionStore } from "@/stores/connectionStore";
-import { useTabStore } from "@/stores/tabStore";
 import * as connectionApi from "@/api/connection";
 import * as databaseApi from "@/api/database";
+import { useConnectionStore } from "@/stores/connectionStore";
+import { useTabStore } from "@/stores/tabStore";
 import type { ConnectionConfig } from "@/types/connection";
 
 export function useConnection() {

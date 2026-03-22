@@ -1,20 +1,26 @@
-import { useState, useCallback } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Trash2, Sparkles, Eye } from "lucide-react";
-import { toast } from "sonner";
-import { faker } from "@faker-js/faker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useTabStore } from "@/stores/tabStore";
+import { faker } from "@faker-js/faker";
+import { Eye, Plus, Sparkles, Trash2 } from "lucide-react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 interface DataGeneratorProps {
   open: boolean;
@@ -32,66 +38,94 @@ interface FieldDef {
 }
 
 const FAKER_METHODS = [
-  { category: "Person", methods: [
-    { value: "person.firstName", label: "First Name" },
-    { value: "person.lastName", label: "Last Name" },
-    { value: "person.fullName", label: "Full Name" },
-    { value: "person.gender", label: "Gender" },
-    { value: "person.jobTitle", label: "Job Title" },
-  ]},
-  { category: "Internet", methods: [
-    { value: "internet.email", label: "Email" },
-    { value: "internet.username", label: "Username" },
-    { value: "internet.url", label: "URL" },
-    { value: "internet.ip", label: "IP Address" },
-    { value: "internet.password", label: "Password" },
-  ]},
-  { category: "Location", methods: [
-    { value: "location.city", label: "City" },
-    { value: "location.country", label: "Country" },
-    { value: "location.state", label: "State" },
-    { value: "location.streetAddress", label: "Street Address" },
-    { value: "location.zipCode", label: "Zip Code" },
-    { value: "location.latitude", label: "Latitude" },
-    { value: "location.longitude", label: "Longitude" },
-  ]},
-  { category: "Commerce", methods: [
-    { value: "commerce.productName", label: "Product Name" },
-    { value: "commerce.price", label: "Price" },
-    { value: "commerce.department", label: "Department" },
-  ]},
-  { category: "Date", methods: [
-    { value: "date.past", label: "Past Date" },
-    { value: "date.future", label: "Future Date" },
-    { value: "date.recent", label: "Recent Date" },
-    { value: "date.birthdate", label: "Birthdate" },
-  ]},
-  { category: "Lorem", methods: [
-    { value: "lorem.sentence", label: "Sentence" },
-    { value: "lorem.paragraph", label: "Paragraph" },
-    { value: "lorem.word", label: "Word" },
-    { value: "lorem.words", label: "Words" },
-  ]},
-  { category: "Number", methods: [
-    { value: "number.int", label: "Integer" },
-    { value: "number.float", label: "Float" },
-  ]},
-  { category: "Datatype", methods: [
-    { value: "datatype.boolean", label: "Boolean" },
-    { value: "string.uuid", label: "UUID" },
-  ]},
-  { category: "Company", methods: [
-    { value: "company.name", label: "Company Name" },
-    { value: "company.catchPhrase", label: "Catch Phrase" },
-    { value: "company.buzzPhrase", label: "Buzz Phrase" },
-  ]},
-  { category: "Phone", methods: [
-    { value: "phone.number", label: "Phone Number" },
-  ]},
-  { category: "Image", methods: [
-    { value: "image.url", label: "Image URL" },
-    { value: "image.avatar", label: "Avatar URL" },
-  ]},
+  {
+    category: "Person",
+    methods: [
+      { value: "person.firstName", label: "First Name" },
+      { value: "person.lastName", label: "Last Name" },
+      { value: "person.fullName", label: "Full Name" },
+      { value: "person.gender", label: "Gender" },
+      { value: "person.jobTitle", label: "Job Title" },
+    ],
+  },
+  {
+    category: "Internet",
+    methods: [
+      { value: "internet.email", label: "Email" },
+      { value: "internet.username", label: "Username" },
+      { value: "internet.url", label: "URL" },
+      { value: "internet.ip", label: "IP Address" },
+      { value: "internet.password", label: "Password" },
+    ],
+  },
+  {
+    category: "Location",
+    methods: [
+      { value: "location.city", label: "City" },
+      { value: "location.country", label: "Country" },
+      { value: "location.state", label: "State" },
+      { value: "location.streetAddress", label: "Street Address" },
+      { value: "location.zipCode", label: "Zip Code" },
+      { value: "location.latitude", label: "Latitude" },
+      { value: "location.longitude", label: "Longitude" },
+    ],
+  },
+  {
+    category: "Commerce",
+    methods: [
+      { value: "commerce.productName", label: "Product Name" },
+      { value: "commerce.price", label: "Price" },
+      { value: "commerce.department", label: "Department" },
+    ],
+  },
+  {
+    category: "Date",
+    methods: [
+      { value: "date.past", label: "Past Date" },
+      { value: "date.future", label: "Future Date" },
+      { value: "date.recent", label: "Recent Date" },
+      { value: "date.birthdate", label: "Birthdate" },
+    ],
+  },
+  {
+    category: "Lorem",
+    methods: [
+      { value: "lorem.sentence", label: "Sentence" },
+      { value: "lorem.paragraph", label: "Paragraph" },
+      { value: "lorem.word", label: "Word" },
+      { value: "lorem.words", label: "Words" },
+    ],
+  },
+  {
+    category: "Number",
+    methods: [
+      { value: "number.int", label: "Integer" },
+      { value: "number.float", label: "Float" },
+    ],
+  },
+  {
+    category: "Datatype",
+    methods: [
+      { value: "datatype.boolean", label: "Boolean" },
+      { value: "string.uuid", label: "UUID" },
+    ],
+  },
+  {
+    category: "Company",
+    methods: [
+      { value: "company.name", label: "Company Name" },
+      { value: "company.catchPhrase", label: "Catch Phrase" },
+      { value: "company.buzzPhrase", label: "Buzz Phrase" },
+    ],
+  },
+  { category: "Phone", methods: [{ value: "phone.number", label: "Phone Number" }] },
+  {
+    category: "Image",
+    methods: [
+      { value: "image.url", label: "Image URL" },
+      { value: "image.avatar", label: "Avatar URL" },
+    ],
+  },
 ];
 
 function generateFakerValue(method: string): unknown {
@@ -110,7 +144,13 @@ function generateFakerValue(method: string): unknown {
   }
 }
 
-export function DataGenerator({ open, onOpenChange, connectionId, database, collection }: DataGeneratorProps) {
+export function DataGenerator({
+  open,
+  onOpenChange,
+  connectionId,
+  database,
+  collection,
+}: DataGeneratorProps) {
   const addTab = useTabStore((s) => s.addTab);
   const [targetCollection, setTargetCollection] = useState(collection ?? "");
   const [docCount, setDocCount] = useState(10);
@@ -225,7 +265,7 @@ export function DataGenerator({ open, onOpenChange, connectionId, database, coll
                 className="h-8 text-sm"
                 type="number"
                 value={docCount}
-                onChange={(e) => setDocCount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                onChange={(e) => setDocCount(Math.max(1, Number.parseInt(e.target.value, 10) || 1))}
                 min={1}
                 max={10000}
               />
@@ -235,7 +275,12 @@ export function DataGenerator({ open, onOpenChange, connectionId, database, coll
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label className="text-xs">Fields</Label>
-              <Button variant="ghost" size="sm" className="h-5 gap-1 px-1.5 text-[10px]" onClick={addField}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 gap-1 px-1.5 text-[10px]"
+                onClick={addField}
+              >
                 <Plus className="h-3 w-3" />
                 Add Field
               </Button>
@@ -277,7 +322,12 @@ export function DataGenerator({ open, onOpenChange, connectionId, database, coll
                       type="number"
                       value={field.nullable}
                       onChange={(e) =>
-                        updateField(field.id, { nullable: Math.max(0, Math.min(100, parseInt(e.target.value, 10) || 0)) })
+                        updateField(field.id, {
+                          nullable: Math.max(
+                            0,
+                            Math.min(100, Number.parseInt(e.target.value, 10) || 0),
+                          ),
+                        })
                       }
                       title="Null %"
                       min={0}

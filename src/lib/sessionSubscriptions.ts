@@ -1,6 +1,6 @@
-import { useTabStore } from "@/stores/tabStore";
-import { useEditorStore } from "@/stores/editorStore";
 import { useConnectionStore } from "@/stores/connectionStore";
+import { useEditorStore } from "@/stores/editorStore";
+import { useTabStore } from "@/stores/tabStore";
 import { scheduleSaveSession } from "./sessionPersistence";
 
 export function setupSessionSubscriptions(): void {

@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { AppShell } from "@/components/layout/AppShell";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { AppShell } from "@/components/layout/AppShell";
 import { Toaster } from "@/components/ui/sonner";
-import { useConnectionStore } from "@/stores/connectionStore";
 import { restoreSession } from "@/lib/sessionRestore";
 import { setupSessionSubscriptions } from "@/lib/sessionSubscriptions";
+import { useConnectionStore } from "@/stores/connectionStore";
+import { useEffect, useState } from "react";
 
 let subscriptionsSetup = false;
 

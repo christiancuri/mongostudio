@@ -1,9 +1,9 @@
-import { useTabStore } from "@/stores/tabStore";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { QueryEditor } from "@/components/editor/QueryEditor";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { MonitoringPanel } from "@/components/tools/MonitoringPanel";
 import { SchemaAnalysis } from "@/components/tools/SchemaAnalysis";
+import { useTabStore } from "@/stores/tabStore";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 export function TabPanel() {
   const { tabs, activeTabId } = useTabStore();
@@ -29,7 +29,12 @@ export function TabPanel() {
     return <MonitoringPanel key={activeTab.id} connectionId={activeTab.connectionId} />;
   }
 
-  if (activeTab.type === "schema" && activeTab.connectionId && activeTab.database && activeTab.collection) {
+  if (
+    activeTab.type === "schema" &&
+    activeTab.connectionId &&
+    activeTab.database &&
+    activeTab.collection
+  ) {
     return (
       <SchemaAnalysis
         key={activeTab.id}

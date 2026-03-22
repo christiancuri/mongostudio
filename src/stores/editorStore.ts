@@ -21,7 +21,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setContent: (tabId, content) =>
     set((state) => {
       const next = new Map(state.editors);
-      const current = next.get(tabId) ?? { content: "", cursorLine: 1, cursorColumn: 1, dirty: false };
+      const current = next.get(tabId) ?? {
+        content: "",
+        cursorLine: 1,
+        cursorColumn: 1,
+        dirty: false,
+      };
       next.set(tabId, { ...current, content, dirty: true });
       return { editors: next };
     }),

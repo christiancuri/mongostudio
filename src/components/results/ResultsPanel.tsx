@@ -1,6 +1,4 @@
-import { useCallback, useState } from "react";
-import { useResultStore } from "@/stores/resultStore";
-import { useEditorStore } from "@/stores/editorStore";
+import { cancelExecution, executeQuery } from "@/api/query";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,28 +6,30 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useEditorStore } from "@/stores/editorStore";
+import { useResultStore } from "@/stores/resultStore";
+import type { Tab } from "@/types/tab";
 import {
+  Braces,
+  ChevronDown,
   ChevronFirst,
   ChevronLast,
   ChevronLeft,
   ChevronRight,
-  Clock,
-  Loader2,
-  ChevronDown,
+  ChevronUp,
   ChevronsDownUp,
   ChevronsUpDown,
-  TreePine,
-  Table2,
-  Braces,
+  Clock,
+  Loader2,
   Square,
+  Table2,
   Terminal,
-  ChevronUp,
+  TreePine,
 } from "lucide-react";
-import type { Tab } from "@/types/tab";
-import { executeQuery, cancelExecution } from "@/api/query";
-import { TreeView } from "./TreeView";
-import { TableView } from "./TableView";
+import { useCallback, useState } from "react";
 import { JsonView } from "./JsonView";
+import { TableView } from "./TableView";
+import { TreeView } from "./TreeView";
 
 interface ResultsPanelProps {
   tab: Tab;
@@ -109,18 +109,12 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
     }
   }, [tab.connectionId]);
 
-  const totalPages =
-    result && result.totalCount
-      ? Math.ceil(result.totalCount / result.pageSize)
-      : 1;
+  const totalPages = result?.totalCount ? Math.ceil(result.totalCount / result.pageSize) : 1;
   const currentPage = result?.page ?? 1;
   const startDoc = result ? (result.page - 1) * result.pageSize + 1 : 0;
-  const endDoc = result
-    ? startDoc + result.documents.length - 1
-    : 0;
+  const endDoc = result ? startDoc + result.documents.length - 1 : 0;
 
-  const ViewIcon =
-    VIEW_MODES.find((v) => v.value === viewMode)?.icon ?? TreePine;
+  const ViewIcon = VIEW_MODES.find((v) => v.value === viewMode)?.icon ?? TreePine;
 
   // Expand/collapse all signal: positive = expand, negative = collapse
   const [expandSignal, setExpandSignal] = useState(0);
@@ -136,9 +130,7 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
           {tab.collection && (
             <span className="flex items-center gap-1 text-muted-foreground">
               <Table2 className="h-3 w-3" />
-              <span className="font-medium text-foreground">
-                {tab.collection}
-              </span>
+              <span className="font-medium text-foreground">{tab.collection}</span>
             </span>
           )}
           {result && (
@@ -154,9 +146,7 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
                   ? result.totalCount.toLocaleString()
                   : result.documents.length}{" "}
                 Doc
-                {(result.totalCount ?? result.documents.length) !== 1
-                  ? "s"
-                  : ""}
+                {(result.totalCount ?? result.documents.length) !== 1 ? "s" : ""}
               </span>
             </>
           )}
@@ -210,7 +200,11 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
               {/* Page size */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-5 min-w-[50px] px-2 text-[11px] font-mono bg-background">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-5 min-w-[50px] px-2 text-[11px] font-mono bg-background"
+                  >
                     {result.pageSize}
                     <ChevronDown className="ml-1 h-2.5 w-2.5" />
                   </Button>
@@ -222,7 +216,9 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
                       onClick={() => handlePageSizeChange(size)}
                       className="text-xs justify-between"
                     >
-                      {result.pageSize === size && <span className="text-primary mr-2">&#10003;</span>}
+                      {result.pageSize === size && (
+                        <span className="text-primary mr-2">&#10003;</span>
+                      )}
                       <span className={result.pageSize === size ? "font-medium" : ""}>{size}</span>
                     </DropdownMenuItem>
                   ))}
@@ -282,11 +278,7 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
           {/* View mode */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-5 gap-1 px-1.5 text-[10px]"
-              >
+              <Button variant="ghost" size="sm" className="h-5 gap-1 px-1.5 text-[10px]">
                 <ViewIcon className="h-3 w-3" />
                 {VIEW_MODES.find((v) => v.value === viewMode)?.label}
                 <ChevronDown className="h-2.5 w-2.5" />
@@ -296,12 +288,7 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
               {VIEW_MODES.map((mode) => (
                 <DropdownMenuItem
                   key={mode.value}
-                  onClick={() =>
-                    setViewMode(
-                      tab.id,
-                      mode.value as "tree" | "table" | "json",
-                    )
-                  }
+                  onClick={() => setViewMode(tab.id, mode.value as "tree" | "table" | "json")}
                   className="gap-2 text-xs"
                 >
                   <mode.icon className="h-3.5 w-3.5" />
@@ -356,12 +343,8 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
         {error && !isLoading && (
           <div className="flex h-full items-center justify-center p-4">
             <div className="max-w-md text-center">
-              <p className="text-sm font-medium text-destructive">
-                Query Error
-              </p>
-              <p className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground">
-                {error}
-              </p>
+              <p className="text-sm font-medium text-destructive">Query Error</p>
+              <p className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground">{error}</p>
             </div>
           </div>
         )}
@@ -396,9 +379,7 @@ export function ResultsPanel({ tab }: ResultsPanelProps) {
                 colorFlag={tab.colorFlag}
               />
             )}
-            {viewMode === "json" && (
-              <JsonView documents={result.documents} />
-            )}
+            {viewMode === "json" && <JsonView documents={result.documents} />}
           </>
         )}
       </div>

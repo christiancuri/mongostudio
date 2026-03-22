@@ -1,11 +1,19 @@
+import type {
+  CollectionInfo,
+  CollectionStats,
+  DatabaseInfo,
+  DatabaseStats,
+} from "@/types/database";
 import { invoke } from "@tauri-apps/api/core";
-import type { CollectionInfo, CollectionStats, DatabaseInfo, DatabaseStats } from "@/types/database";
 
 export async function listDatabases(connectionId: string): Promise<DatabaseInfo[]> {
   return invoke("list_databases", { connectionId });
 }
 
-export async function listCollections(connectionId: string, database: string): Promise<CollectionInfo[]> {
+export async function listCollections(
+  connectionId: string,
+  database: string,
+): Promise<CollectionInfo[]> {
   return invoke("list_collections", { connectionId, database });
 }
 
@@ -24,7 +32,10 @@ export async function getCollectionStats(
   return invoke("collection_stats", { connectionId, database, collection });
 }
 
-export async function getDatabaseStats(connectionId: string, database: string): Promise<DatabaseStats> {
+export async function getDatabaseStats(
+  connectionId: string,
+  database: string,
+): Promise<DatabaseStats> {
   return invoke("database_stats", { connectionId, database });
 }
 

@@ -1,29 +1,29 @@
-import { useState } from "react";
-import {
-  Database,
-  Play,
-  Square,
-  Bug,
-  Import,
-  FileOutput,
-  Activity,
-  Code2,
-  PanelLeftClose,
-  PanelLeft,
-  Settings,
-  Sparkles,
-  Command,
-} from "lucide-react";
+import { CodeGenerator } from "@/components/tools/CodeGenerator";
+import { DataGenerator } from "@/components/tools/DataGenerator";
+import { ExportDialog } from "@/components/tools/ExportDialog";
+import { ImportDialog } from "@/components/tools/ImportDialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useConnectionStore } from "@/stores/connectionStore";
-import { useTabStore } from "@/stores/tabStore";
-import { ImportDialog } from "@/components/tools/ImportDialog";
-import { ExportDialog } from "@/components/tools/ExportDialog";
-import { DataGenerator } from "@/components/tools/DataGenerator";
-import { CodeGenerator } from "@/components/tools/CodeGenerator";
 import { useEditorStore } from "@/stores/editorStore";
+import { useTabStore } from "@/stores/tabStore";
+import {
+  Activity,
+  Bug,
+  Code2,
+  Command,
+  Database,
+  FileOutput,
+  Import,
+  PanelLeft,
+  PanelLeftClose,
+  Play,
+  Settings,
+  Sparkles,
+  Square,
+} from "lucide-react";
+import { useState } from "react";
 
 interface ToolbarProps {
   sidebarCollapsed: boolean;
@@ -63,7 +63,12 @@ function ToolbarButton({
   );
 }
 
-export function Toolbar({ sidebarCollapsed, onToggleSidebar, onNewConnection, onCommandPalette }: ToolbarProps) {
+export function Toolbar({
+  sidebarCollapsed,
+  onToggleSidebar,
+  onNewConnection,
+  onCommandPalette,
+}: ToolbarProps) {
   const activeConnections = useConnectionStore((s) => s.activeConnections);
   const tabs = useTabStore((s) => s.tabs);
   const activeTabId = useTabStore((s) => s.activeTabId);
@@ -90,7 +95,9 @@ export function Toolbar({ sidebarCollapsed, onToggleSidebar, onNewConnection, on
     });
   };
 
-  const currentQuery = activeTabId ? editors.get(activeTabId)?.content ?? activeTab?.content ?? "" : "";
+  const currentQuery = activeTabId
+    ? (editors.get(activeTabId)?.content ?? activeTab?.content ?? "")
+    : "";
 
   return (
     <>

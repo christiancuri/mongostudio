@@ -179,8 +179,7 @@ pub async fn list_indexes(
         let idx = cursor
             .deserialize_current()
             .map_err(|e| AppError::Connection(e.to_string()))?;
-        let json = serde_json::to_value(&idx)
-            .map_err(|e| AppError::Connection(e.to_string()))?;
+        let json = serde_json::to_value(&idx).map_err(|e| AppError::Connection(e.to_string()))?;
         indexes.push(json);
     }
 
@@ -216,34 +215,35 @@ pub async fn get_indexes_detail(
         let idx = cursor
             .deserialize_current()
             .map_err(|e| AppError::Connection(e.to_string()))?;
-        let json = serde_json::to_value(&idx)
-            .map_err(|e| AppError::Connection(e.to_string()))?;
+        let json = serde_json::to_value(&idx).map_err(|e| AppError::Connection(e.to_string()))?;
         indexes.push(json);
     }
 
     // Get index sizes from collStats
-    let index_sizes: std::collections::HashMap<String, i64> =
-        match db.run_command(bson::doc! { "collStats": &collection }).await {
-            Ok(stats) => {
-                if let Some(bson::Bson::Document(sizes)) = stats.get("indexSizes") {
-                    sizes
-                        .iter()
-                        .filter_map(|(k, v)| {
-                            let size = match v {
-                                bson::Bson::Int64(n) => Some(*n),
-                                bson::Bson::Int32(n) => Some(i64::from(*n)),
-                                bson::Bson::Double(n) => Some(*n as i64),
-                                _ => None,
-                            };
-                            size.map(|s| (k.clone(), s))
-                        })
-                        .collect()
-                } else {
-                    std::collections::HashMap::new()
-                }
+    let index_sizes: std::collections::HashMap<String, i64> = match db
+        .run_command(bson::doc! { "collStats": &collection })
+        .await
+    {
+        Ok(stats) => {
+            if let Some(bson::Bson::Document(sizes)) = stats.get("indexSizes") {
+                sizes
+                    .iter()
+                    .filter_map(|(k, v)| {
+                        let size = match v {
+                            bson::Bson::Int64(n) => Some(*n),
+                            bson::Bson::Int32(n) => Some(i64::from(*n)),
+                            bson::Bson::Double(n) => Some(*n as i64),
+                            _ => None,
+                        };
+                        size.map(|s| (k.clone(), s))
+                    })
+                    .collect()
+            } else {
+                std::collections::HashMap::new()
             }
-            Err(_) => std::collections::HashMap::new(),
-        };
+        }
+        Err(_) => std::collections::HashMap::new(),
+    };
 
     // Get index stats via $indexStats aggregation
     let index_stats: std::collections::HashMap<String, serde_json::Value> = {
@@ -251,11 +251,7 @@ pub async fn get_indexes_detail(
         match col.aggregate(pipeline).await {
             Ok(mut agg_cursor) => {
                 let mut stats_map = std::collections::HashMap::new();
-                while agg_cursor
-                    .advance()
-                    .await
-                    .unwrap_or(false)
-                {
+                while agg_cursor.advance().await.unwrap_or(false) {
                     if let Ok(doc) = agg_cursor.deserialize_current() {
                         if let Some(name) = doc.get_str("name").ok() {
                             let json = serde_json::to_value(&doc).unwrap_or_default();
@@ -273,14 +269,18 @@ pub async fn get_indexes_detail(
     let result: Vec<serde_json::Value> = indexes
         .into_iter()
         .map(|idx| {
-            let name = idx.get("name").and_then(|v| v.as_str()).unwrap_or("unknown");
+            let name = idx
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("unknown");
             let key = idx.get("key").cloned().unwrap_or(serde_json::json!({}));
 
             // Determine type from key values
             let idx_type = key
                 .as_object()
                 .and_then(|obj| {
-                    obj.values().find_map(|v| v.as_str().map(|s| s.to_uppercase()))
+                    obj.values()
+                        .find_map(|v| v.as_str().map(|s| s.to_uppercase()))
                 })
                 .unwrap_or_else(|| "REGULAR".to_string());
 
@@ -343,9 +343,10 @@ pub async fn get_index_info(
 ) -> AppResult<serde_json::Value> {
     let all = get_indexes_detail(state, connection_id, database, collection).await?;
     if let Some(arr) = all.as_array() {
-        if let Some(idx) = arr.iter().find(|v| {
-            v.get("name").and_then(|n| n.as_str()) == Some(&index_name)
-        }) {
+        if let Some(idx) = arr
+            .iter()
+            .find(|v| v.get("name").and_then(|n| n.as_str()) == Some(&index_name))
+        {
             return Ok(idx.clone());
         }
     }

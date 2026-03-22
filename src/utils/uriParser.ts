@@ -62,7 +62,7 @@ export function parseMongoUri(uri: string): ConnectionConfig {
       const [host, portStr] = h.split(":");
       return {
         host: host || "localhost",
-        port: portStr ? parseInt(portStr, 10) : 27017,
+        port: portStr ? Number.parseInt(portStr, 10) : 27017,
       };
     });
     config.uri.hosts = hosts;
@@ -72,8 +72,7 @@ export function parseMongoUri(uri: string): ConnectionConfig {
       const options: Record<string, string> = {};
       for (const pair of optionsStr.split("&")) {
         const [key, val] = pair.split("=");
-        if (key && val)
-          options[decodeURIComponent(key)] = decodeURIComponent(val);
+        if (key && val) options[decodeURIComponent(key)] = decodeURIComponent(val);
       }
       config.uri.options = options;
 
@@ -115,9 +114,7 @@ export function parseMongoUri(uri: string): ConnectionConfig {
 }
 
 export function buildConnectionString(config: ConnectionConfig): string {
-  const hostStr = config.uri.hosts
-    .map((h) => `${h.host}:${h.port}`)
-    .join(",");
+  const hostStr = config.uri.hosts.map((h) => `${h.host}:${h.port}`).join(",");
   const auth =
     config.uri.username && config.uri.password
       ? `${encodeURIComponent(config.uri.username)}:${encodeURIComponent(config.uri.password)}@`

@@ -1,6 +1,6 @@
+import { useConnectionStore } from "@/stores/connectionStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useTabStore } from "@/stores/tabStore";
-import { useConnectionStore } from "@/stores/connectionStore";
 
 export function StatusBar() {
   const activeTabId = useTabStore((s) => s.activeTabId);
@@ -22,9 +22,7 @@ export function StatusBar() {
             Ln {editor.cursorLine}, Col {editor.cursorColumn}
           </span>
         )}
-        {activeTab?.dirty && (
-          <span className="text-yellow-500">Modified</span>
-        )}
+        {activeTab?.dirty && <span className="text-yellow-500">Modified</span>}
       </div>
       <div className="flex items-center gap-4">
         {connection && (

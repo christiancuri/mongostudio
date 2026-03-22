@@ -6,11 +6,7 @@ interface BreadcrumbProps {
   collection?: string;
 }
 
-export function Breadcrumb({
-  connectionName,
-  database,
-  collection,
-}: BreadcrumbProps) {
+export function Breadcrumb({ connectionName, database, collection }: BreadcrumbProps) {
   if (!connectionName) return null;
 
   return (

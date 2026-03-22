@@ -1,12 +1,12 @@
-import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link, X, Loader2 } from "lucide-react";
-import { readText } from "@tauri-apps/plugin-clipboard-manager";
-import { toast } from "sonner";
+import { useConnection } from "@/hooks/useConnection";
 import type { ConnectionConfig } from "@/types/connection";
 import { parseMongoUri } from "@/utils/uriParser";
-import { useConnection } from "@/hooks/useConnection";
+import { readText } from "@tauri-apps/plugin-clipboard-manager";
+import { Link, Loader2, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface ConnectionUriDialogProps {
   open: boolean;
@@ -14,11 +14,7 @@ interface ConnectionUriDialogProps {
   onParsed: (config: ConnectionConfig) => void;
 }
 
-export function ConnectionUriDialog({
-  open,
-  onClose,
-  onParsed,
-}: ConnectionUriDialogProps) {
+export function ConnectionUriDialog({ open, onClose, onParsed }: ConnectionUriDialogProps) {
   const [uri, setUri] = useState("mongodb://localhost:27017");
   const [testing, setTesting] = useState(false);
   const { testConnectionConfig } = useConnection();
@@ -86,9 +82,9 @@ export function ConnectionUriDialog({
         {/* Body */}
         <div className="px-4 py-4 space-y-4">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            If you have a connection string (SRV or standard), such as your
-            MongoDB Atlas or AWS DocumentDB, you can paste it here and
-            MongoStudio will automatically configure your connection settings.
+            If you have a connection string (SRV or standard), such as your MongoDB Atlas or AWS
+            DocumentDB, you can paste it here and MongoStudio will automatically configure your
+            connection settings.
           </p>
 
           <div className="space-y-1.5">
@@ -113,9 +109,7 @@ export function ConnectionUriDialog({
             onClick={handleTest}
             disabled={testing || !uri.trim()}
           >
-            {testing ? (
-              <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-            ) : null}
+            {testing ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : null}
             Test Connection
           </Button>
           <div className="flex items-center gap-2">
