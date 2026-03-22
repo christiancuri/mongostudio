@@ -4,16 +4,19 @@ import { Toaster } from "@/components/ui/sonner";
 import { restoreSession } from "@/lib/sessionRestore";
 import { setupSessionSubscriptions } from "@/lib/sessionSubscriptions";
 import { useConnectionStore } from "@/stores/connectionStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { useEffect, useState } from "react";
 
 let subscriptionsSetup = false;
 
 export default function App() {
   const loadSavedConnections = useConnectionStore((s) => s.loadSavedConnections);
+  const loadSettings = useSettingsStore((s) => s.loadSettings);
   const [restoring, setRestoring] = useState(true);
 
   useEffect(() => {
     const init = async () => {
+      await loadSettings();
       await loadSavedConnections();
       await restoreSession();
       setRestoring(false);

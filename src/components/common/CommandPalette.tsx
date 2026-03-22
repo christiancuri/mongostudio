@@ -19,6 +19,7 @@ interface CommandPaletteProps {
   onOpenChange: (open: boolean) => void;
   onNewConnection: () => void;
   onToggleSidebar: () => void;
+  onSettings: () => void;
 }
 
 export function CommandPalette({
@@ -26,6 +27,7 @@ export function CommandPalette({
   onOpenChange,
   onNewConnection,
   onToggleSidebar,
+  onSettings,
 }: CommandPaletteProps) {
   const [search, setSearch] = useState("");
 
@@ -134,7 +136,11 @@ export function CommandPalette({
                 shortcut="Ctrl+B"
                 onSelect={() => runAction(onToggleSidebar)}
               />
-              <CommandItem icon={Settings} label="Settings" onSelect={() => runAction(() => {})} />
+              <CommandItem
+                icon={Settings}
+                label="Settings"
+                onSelect={() => runAction(onSettings)}
+              />
             </Command.Group>
           </Command.List>
         </Command>

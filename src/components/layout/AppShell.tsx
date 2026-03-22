@@ -1,5 +1,6 @@
 import { CommandPalette } from "@/components/common/CommandPalette";
 import { ConnectionListDialog } from "@/components/connection/ConnectionListDialog";
+import { SettingsDialog } from "@/components/settings/SettingsDialog";
 import { TabBar } from "@/components/tabs/TabBar";
 import { TabPanel } from "@/components/tabs/TabPanel";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +17,7 @@ export function AppShell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [connectionDialogOpen, setConnectionDialogOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const toggleSidebar = useCallback(() => setSidebarCollapsed((v) => !v), []);
   const addTab = useTabStore((s) => s.addTab);
@@ -94,7 +96,12 @@ export function AppShell() {
           setConnectionDialogOpen(true);
         }}
         onToggleSidebar={toggleSidebar}
+        onSettings={() => {
+          setCommandPaletteOpen(false);
+          setSettingsOpen(true);
+        }}
       />
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </TooltipProvider>
   );
 }

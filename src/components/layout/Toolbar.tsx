@@ -1,3 +1,4 @@
+import { SettingsDialog } from "@/components/settings/SettingsDialog";
 import { CodeGenerator } from "@/components/tools/CodeGenerator";
 import { DataGenerator } from "@/components/tools/DataGenerator";
 import { ExportDialog } from "@/components/tools/ExportDialog";
@@ -83,6 +84,7 @@ export function Toolbar({
   const [exportOpen, setExportOpen] = useState(false);
   const [dataGenOpen, setDataGenOpen] = useState(false);
   const [codeGenOpen, setCodeGenOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleOpenMonitoring = () => {
     if (!activeTab?.connectionId) return;
@@ -147,7 +149,7 @@ export function Toolbar({
         />
         <div className="flex-1" />
         <ToolbarButton icon={Command} label="Command Palette (Ctrl+P)" onClick={onCommandPalette} />
-        <ToolbarButton icon={Settings} label="Settings" />
+        <ToolbarButton icon={Settings} label="Settings" onClick={() => setSettingsOpen(true)} />
       </div>
 
       {/* Dialogs */}
@@ -185,6 +187,7 @@ export function Toolbar({
         database={activeTab?.database}
         collection={activeTab?.collection}
       />
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>
   );
 }

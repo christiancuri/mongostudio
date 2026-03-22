@@ -163,14 +163,47 @@ function isComparableType(type: string): boolean {
   return ["Int32", "Int64", "Double", "Decimal128", "Date", "Timestamp"].includes(type);
 }
 
-// Document summary for the header row
-function documentSummary(doc: Record<string, unknown>): string {
+// Document summary for the header row — returns JSX with colored values
+function DocumentSummary({ doc }: { doc: Record<string, unknown> }) {
   const entries = Object.entries(doc).filter(([k]) => k !== "_id");
   const fieldCount = Object.keys(doc).length;
-  if (entries.length === 0) return `(${fieldCount} fields)`;
+  if (entries.length === 0) return <span>({fieldCount} fields)</span>;
   const first = entries[0];
+  const type = getValueType(first[1]);
   const fv = typeof first[1] === "string" ? `"${first[1]}"` : formatValue(first[1]);
-  return `{ ${first[0]}: ${fv} } (${fieldCount} fields)`;
+  return (
+    <span>
+      {"{ "}
+      {first[0]} : <span className={getValueColor(type)}>{fv}</span>
+      {" }"} ({fieldCount} fields)
+    </span>
+  );
+}
+
+// Colored inline summary for Object fields like { smartTodos: false, rag: false }
+function ColoredObjectSummary({ value }: { value: Record<string, unknown> }) {
+  const entries = Object.entries(value).filter(
+    ([k]) => !k.startsWith("$") || k === "$oid" || k === "$date",
+  );
+  if (entries.length === 0) return <span>{"{}"}</span>;
+  const shown = entries.slice(0, 3);
+  return (
+    <span>
+      {"{ "}
+      {shown.map(([k, v], i) => {
+        const t = getValueType(v);
+        const fv = typeof v === "string" ? `"${v}"` : formatValue(v);
+        return (
+          <span key={k}>
+            {i > 0 && ", "}
+            {k} : <span className={getValueColor(t)}>{fv}</span>
+          </span>
+        );
+      })}
+      {entries.length > 3 && ", ..."}
+      {" }"}
+    </span>
+  );
 }
 
 function relativeTime(date: Date): string {
@@ -201,60 +234,61 @@ function getDocId(doc: Record<string, unknown>): string {
   return "unknown";
 }
 
-// Colors for values by type
+// Value colors matching NoSQLBooster tree view
 function getValueColor(type: string): string {
   switch (type) {
     case "String":
+      return "text-[#98C379]"; // light green
     case "ObjectId":
-      return "text-yellow-400";
+      return "text-[#C586C0]"; // purple
     case "Int32":
     case "Int64":
     case "Double":
     case "Decimal128":
-      return "text-blue-400";
+      return "text-[#CE9178]"; // orange
     case "Bool":
-      return "text-orange-400";
+      return "text-[#C586C0]"; // purple
     case "Date":
     case "Timestamp":
-      return "text-green-400";
+      return "text-[#CCA700]"; // dark yellow/gold
     case "Null":
     case "Undefined":
       return "text-muted-foreground/50";
     case "Regex":
-      return "text-red-400";
+      return "text-[#d16969]"; // red
     case "Array":
     case "Object":
-      return "text-muted-foreground";
+      return "text-foreground/70";
     default:
       return "text-foreground";
   }
 }
 
-// Colors for type column
+// Type column colors matching NoSQLBooster
 function getTypeColor(type: string): string {
   switch (type) {
     case "String":
-      return "text-green-500";
+      return "text-[#98C379]"; // light green
     case "ObjectId":
-      return "text-gray-400";
+      return "text-[#C586C0]"; // purple
     case "Int32":
     case "Int64":
     case "Double":
     case "Decimal128":
-      return "text-blue-500";
+      return "text-[#CE9178]"; // orange
     case "Bool":
-      return "text-orange-500";
+      return "text-[#C586C0]"; // purple
     case "Date":
     case "Timestamp":
-      return "text-green-500";
+      return "text-[#CCA700]"; // dark yellow/gold
     case "Null":
       return "text-muted-foreground/50";
     case "Array":
-      return "text-yellow-500";
+      return "text-muted-foreground";
     case "Object":
-      return "text-cyan-500";
+      return "text-muted-foreground";
     case "Regex":
-      return "text-red-500";
+      return "text-[#d16969]"; // red
     default:
       return "text-muted-foreground";
   }
@@ -818,13 +852,11 @@ export function TreeView({
         <table className="w-full border-collapse font-mono text-xs">
           <thead className="sticky top-0 z-10 bg-muted">
             <tr className="border-b border-border">
-              <th className="min-w-[180px] w-[250px] px-2 py-1 text-left font-medium text-muted-foreground">
+              <th className="min-w-[180px] w-[250px] px-2 py-1 text-left font-medium text-foreground">
                 Key
               </th>
-              <th className="px-2 py-1 text-left font-medium text-muted-foreground">Value</th>
-              <th className="w-[90px] px-2 py-1 text-left font-medium text-muted-foreground">
-                Type
-              </th>
+              <th className="px-2 py-1 text-left font-medium text-foreground">Value</th>
+              <th className="w-[90px] px-2 py-1 text-left font-medium text-foreground">Type</th>
             </tr>
           </thead>
           <tbody>
@@ -909,7 +941,7 @@ function DocumentRows({
         onDelete={onDelete}
       >
         <tr
-          className="cursor-pointer border-b border-border/30 bg-amber-500/10 hover:bg-amber-500/15"
+          className="cursor-pointer border-b border-border/30 bg-primary/8 hover:bg-primary/12"
           onClick={() => setExpanded(!expanded)}
           onDoubleClick={() =>
             hasContext && openEditDocumentTab(connectionId!, database!, collection!, doc, colorFlag)
@@ -923,15 +955,15 @@ function DocumentRows({
                 <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
               )}
               <TypeIcon type="Document" />
-              <span className="font-medium text-amber-300">
+              <span className="font-medium text-foreground">
                 ({index + 1}) {docId.length > 24 ? `${docId.slice(0, 24)}...` : docId}
               </span>
             </div>
           </td>
-          <td className="px-2 py-1 whitespace-nowrap text-muted-foreground">
-            {documentSummary(doc)}
+          <td className="px-2 py-1 whitespace-nowrap text-foreground/70">
+            <DocumentSummary doc={doc} />
           </td>
-          <td className="px-2 py-1 whitespace-nowrap font-medium text-amber-400">Document</td>
+          <td className="px-2 py-1 whitespace-nowrap font-medium text-foreground">Document</td>
         </tr>
       </DocumentHeaderContextMenu>
 
@@ -1082,7 +1114,7 @@ function FieldRow({
         onDelete={onDelete}
       >
         <tr
-          className={`border-b border-border/20 transition-colors hover:bg-accent/30 ${editing ? "bg-amber-500/10" : ""}`}
+          className={`border-b border-border/20 transition-colors hover:bg-accent/30 ${editing ? "bg-primary/8" : ""}`}
           onClick={isExpandable ? () => setExpanded(!expanded) : undefined}
           style={{ cursor: isExpandable ? "pointer" : "default" }}
         >
@@ -1119,6 +1151,11 @@ function FieldRow({
                   onBlur={commitEdit}
                 />
               </div>
+            ) : type === "Object" &&
+              typeof localValue === "object" &&
+              localValue !== null &&
+              !Array.isArray(localValue) ? (
+              <ColoredObjectSummary value={localValue as Record<string, unknown>} />
             ) : (
               formatValue(localValue)
             )}

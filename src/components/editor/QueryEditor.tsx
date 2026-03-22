@@ -154,7 +154,7 @@ export function QueryEditor({ tab }: QueryEditorProps) {
         <Editor
           defaultLanguage="mongoShell"
           defaultValue={initialContent}
-          theme="mongostudio-dark"
+          theme={`mongostudio-${useSettingsStore.getState().resolvedTheme}`}
           onMount={handleEditorMount}
           options={{
             fontSize: settings.editorFontSize,
@@ -179,25 +179,83 @@ export function QueryEditor({ tab }: QueryEditorProps) {
             },
           }}
           beforeMount={(monaco) => {
-            // Define custom dark theme
+            const darkTokenRules = [
+              { token: "keyword", foreground: "C586C0" },
+              { token: "string", foreground: "CE9178" },
+              { token: "number", foreground: "B5CEA8" },
+              { token: "comment", foreground: "6A9955" },
+              { token: "operator", foreground: "D4D4D4" },
+              { token: "method", foreground: "DCDCAA" },
+              { token: "function", foreground: "DCDCAA" },
+              { token: "variable.predefined", foreground: "4FC1FF" },
+              { token: "type", foreground: "4EC9B0" },
+            ];
+
+            // Dark (default — NoSQLBooster-based)
             monaco.editor.defineTheme("mongostudio-dark", {
               base: "vs-dark",
               inherit: true,
+              rules: darkTokenRules,
+              colors: {
+                "editor.background": "#1e1e1e",
+                "editor.foreground": "#cccccc",
+                "editor.lineHighlightBackground": "#2a2a2a",
+                "editorCursor.foreground": "#43C5DB",
+                "editor.selectionBackground": "#264f78",
+                "editor.inactiveSelectionBackground": "#3a3d41",
+                "editorLineNumber.foreground": "#6a6a6a",
+              },
+            });
+
+            // Light
+            monaco.editor.defineTheme("mongostudio-light", {
+              base: "vs",
+              inherit: true,
               rules: [
-                { token: "keyword", foreground: "C586C0" },
-                { token: "string", foreground: "CE9178" },
-                { token: "number", foreground: "B5CEA8" },
-                { token: "comment", foreground: "6A9955" },
-                { token: "operator", foreground: "D4D4D4" },
-                { token: "method", foreground: "DCDCAA" },
-                { token: "function", foreground: "DCDCAA" },
-                { token: "variable.predefined", foreground: "4FC1FF" },
-                { token: "type", foreground: "4EC9B0" },
+                { token: "keyword", foreground: "AF00DB" },
+                { token: "string", foreground: "A31515" },
+                { token: "number", foreground: "098658" },
+                { token: "comment", foreground: "008000" },
+                { token: "operator", foreground: "000000" },
+                { token: "method", foreground: "795E26" },
+                { token: "function", foreground: "795E26" },
+                { token: "variable.predefined", foreground: "0070C1" },
+                { token: "type", foreground: "267F99" },
               ],
+              colors: {
+                "editor.background": "#f8f8f8",
+                "editor.foreground": "#1e1e1e",
+                "editor.lineHighlightBackground": "#f0f0f0",
+                "editorCursor.foreground": "#000000",
+                "editor.selectionBackground": "#add6ff",
+                "editor.inactiveSelectionBackground": "#e5ebf1",
+              },
+            });
+
+            // Emerald (original green-accent dark)
+            monaco.editor.defineTheme("mongostudio-emerald", {
+              base: "vs-dark",
+              inherit: true,
+              rules: darkTokenRules,
               colors: {
                 "editor.background": "#1e1e1e",
                 "editor.foreground": "#d4d4d4",
                 "editor.lineHighlightBackground": "#2a2a2a",
+                "editorCursor.foreground": "#aeafad",
+                "editor.selectionBackground": "#264f78",
+                "editor.inactiveSelectionBackground": "#3a3d41",
+              },
+            });
+
+            // VS Code Dark
+            monaco.editor.defineTheme("mongostudio-vscode-dark", {
+              base: "vs-dark",
+              inherit: true,
+              rules: darkTokenRules,
+              colors: {
+                "editor.background": "#1e1e1e",
+                "editor.foreground": "#d4d4d4",
+                "editor.lineHighlightBackground": "#2a2d2e",
                 "editorCursor.foreground": "#aeafad",
                 "editor.selectionBackground": "#264f78",
                 "editor.inactiveSelectionBackground": "#3a3d41",
